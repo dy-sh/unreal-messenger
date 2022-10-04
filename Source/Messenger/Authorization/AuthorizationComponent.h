@@ -37,43 +37,43 @@ public:
 	void ExchangeKeysWithServer();
 
 	UFUNCTION(Server, Reliable)
-	void ServerReceivePublicKey(const FString& ClientPublicKey);
+	void ServerSetClientPublicKey(const FString& ClientPublicKey);
 
 	UFUNCTION(Client, Reliable)
-	void ClientReceivePublicKey(const FString& ServerPublicKey);
+	void ClientSetServerPublicKey(const FString& ServerPublicKey);
 
 	UFUNCTION(Server, Reliable)
-	void ServerReceiveAesKey(const FString& EncryptedClientAesKey, const FString& EncryptedClientAesIvec);
+	void ServerSetClientAesKey(const FString& EncryptedClientAesKey, const FString& EncryptedClientAesIvec);
 
 	UFUNCTION(Client, Reliable)
-	void ClientReceiveAesKey(const FString& EncryptedServerAesKey, const FString& EncryptedServerAesIvec);
+	void ClientSetServerAesKey(const FString& EncryptedServerAesKey, const FString& EncryptedServerAesIvec);
 
 	/* A client without a private key will not be able to decrypt the server's AES key and send an encrypted message. */
 	UFUNCTION(Server, Reliable)
-	void ServerRequestAuthorization(const FString& EncryptedText, const int32 PayloadSize);
+	void ServerAuthorizeClient(const FString& EncryptedText, const int32 PayloadSize);
 
 	UFUNCTION(Client, Reliable)
-	void ClientRespondAuthorization(const EAuthorizationState State);
+	void ClientAuthorizationComplete(const EAuthorizationState State);
 
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool IsKeysExchangeCompleted() { return KeysExchangeCompleted; }
+	FORCEINLINE bool IsKeysExchangeCompleted() const { return KeysExchangeCompleted; }
 
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE EAuthorizationState GetClientAuthorizationState() { return ClientAuthorizationState; }
+	FORCEINLINE EAuthorizationState GetClientAuthorizationState() const { return ClientAuthorizationState; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FString& GetClientPublicKey() { return ClientEncryptionKeys.PublicKey; }
+	FString GetClientPublicKey() const { return ClientEncryptionKeys.PublicKey; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FEncryptionKeys& GetClientEncryptionKeys() { return ClientEncryptionKeys; }
+	FEncryptionKeys GetClientEncryptionKeys() const { return ClientEncryptionKeys; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FEncryptionKeys& GetServerEncryptionKeys() { return ServerEncryptionKeys; }
+	FEncryptionKeys GetServerEncryptionKeys() const { return ServerEncryptionKeys; }
 
 
 private:

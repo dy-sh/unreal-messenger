@@ -21,9 +21,9 @@ void AConnectionHUD::CreateConnectionUI()
 	ConnectionWidget = CreateWidget<UConnectionWidget>(GetOwningPlayerController(), ConnectionWidgetClass);
 	if (ConnectionWidget)
 	{
-		if (auto* World = GetWorld())
+		if (const auto* World = GetWorld())
 		{
-			if (auto* GameMode = Cast<AConnectionGameMode>(World->GetAuthGameMode()))
+			if (const auto* GameMode = Cast<AConnectionGameMode>(World->GetAuthGameMode()))
 			{
 				ConnectionWidget->Configure(GameMode->SessionParams);
 				ConnectionWidget->AddToViewport();

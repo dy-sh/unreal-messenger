@@ -17,7 +17,7 @@ class MESSENGER_API UChatGameInstance : public UGameInstance
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Settings")
-	FChatSettings LoadSettings();
+	FChatSettings LoadSettings() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void SaveSettings(const FChatSettings& Settings);

@@ -16,10 +16,10 @@ public:
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintPure, Category="Chat")
-	void GetRoomId(FString& RoomId);
+	void GetRoomId(FString& RoomId) const;
 
 	UFUNCTION(BlueprintPure, Category="Chat")
-	void GetRoomSettings(FChatRoomSettings& Settings);
+	void GetRoomSettings(FChatRoomSettings& Settings) const;
 
 	UFUNCTION(BlueprintCallable, Category="Chat")
 	void EditRoomSettings(const FChatRoomSettings& Settings);

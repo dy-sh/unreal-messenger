@@ -9,11 +9,11 @@
 
 void USettingsWidget::SaveSettings(const FChatSettings& Settings)
 {
-	FChatSettings OldSettings = LoadSettings();
+	const FChatSettings OldSettings = LoadSettings();
 
 	if (OldSettings.NickName != Settings.NickName)
 	{
-		if (auto* Controller = GetOwningPlayer())
+		if (const auto* Controller = GetOwningPlayer())
 		{
 			if (auto* ChatComponent = Controller->FindComponentByClass<UChatComponent>())
 			{
@@ -29,9 +29,9 @@ void USettingsWidget::SaveSettings(const FChatSettings& Settings)
 }
 
 
-FChatSettings USettingsWidget::LoadSettings()
+FChatSettings USettingsWidget::LoadSettings() const
 {
-	if (auto* GameInstance = Cast<UChatGameInstance>(GetGameInstance()))
+	if (const auto* GameInstance = Cast<UChatGameInstance>(GetGameInstance()))
 	{
 		return GameInstance->LoadSettings();
 	}

@@ -26,7 +26,7 @@ void UChatComponent::BeginPlay()
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
 
-	if (auto* GameMode = GetWorld()->GetAuthGameMode())
+	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
 	{
 		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
 	}
@@ -56,7 +56,7 @@ void UChatComponent::OnAuthorizationComplete(const EAuthorizationState State, co
 		if (ChatServerComponent) // has authority
 		{
 			ChatUser = ChatServerComponent->AddUser(this, AuthorizationComponent);
-			ClientGetUserInfo(ChatUser->Info, ChatUser->PrivateInfo);
+			ClientSetUserInfo(ChatUser->Info, ChatUser->PrivateInfo);
 		}
 	}
 }
@@ -66,12 +66,12 @@ void UChatComponent::ServerGetUserInfo_Implementation()
 {
 	if (ChatUser)
 	{
-		ClientGetUserInfo(ChatUser->Info, ChatUser->PrivateInfo);
+		ClientSetUserInfo(ChatUser->Info, ChatUser->PrivateInfo);
 	}
 }
 
 
-void UChatComponent::ClientGetUserInfo_Implementation(const FUserInfo& Info, const FUserPrivateInfo& PrivateInfo)
+void UChatComponent::ClientSetUserInfo_Implementation(const FUserInfo& Info, const FUserPrivateInfo& PrivateInfo)
 {
 	UserInfo = Info;
 	UserPrivateInfo = PrivateInfo;

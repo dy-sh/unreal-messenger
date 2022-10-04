@@ -18,10 +18,10 @@ public:
 	void EnterRoom();
 
 	UFUNCTION(BlueprintCallable)
-	FString GetRoomId() const { return RoomId; };
+	FString GetRoomId() const { return RoomId; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetRoomId(const FString& Id) { RoomId = Id; };
+	void SetRoomId(const FString& Id) { RoomId = Id; }
 private:
 	FString RoomId;
 };

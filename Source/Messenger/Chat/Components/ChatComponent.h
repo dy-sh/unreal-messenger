@@ -42,7 +42,7 @@ public:
 	void ServerGetUserInfo();
 
 	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void ClientGetUserInfo(const FUserInfo& Info, const FUserPrivateInfo& PrivateInfo);
+	void ClientSetUserInfo(const FUserInfo& Info, const FUserPrivateInfo& PrivateInfo);
 
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
@@ -66,15 +66,15 @@ public:
 	void ServerChangeUserName(const FString& NewName);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE URoomComponent* GetRoomComponent() { return RoomComponent; }
+	FORCEINLINE URoomComponent* GetRoomComponent() const { return RoomComponent; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FUserInfo& GetUserInfo() { return ChatUser ? ChatUser->Info : UserInfo; }
+	const FUserInfo& GetUserInfo() const { return ChatUser ? ChatUser->Info : UserInfo; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FUserPrivateInfo& GetUserPrivateInfo() { return ChatUser ? ChatUser->PrivateInfo : UserPrivateInfo; }
+	const FUserPrivateInfo& GetUserPrivateInfo() const { return ChatUser ? ChatUser->PrivateInfo : UserPrivateInfo; }
 
 
 private:

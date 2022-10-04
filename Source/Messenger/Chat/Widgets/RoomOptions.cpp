@@ -10,7 +10,7 @@ bool URoomOptions::Initialize()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		if (APlayerController* PlayerController = World->GetFirstPlayerController())
+		if (const APlayerController* PlayerController = World->GetFirstPlayerController())
 		{
 			if (auto* Comp = PlayerController->FindComponentByClass<URoomComponent>())
 			{
@@ -25,7 +25,7 @@ bool URoomOptions::Initialize()
 
 
 
-void URoomOptions::GetRoomId(FString& RoomId)
+void URoomOptions::GetRoomId(FString& RoomId) const
 {
 	if (RoomComponent)
 	{
@@ -34,7 +34,7 @@ void URoomOptions::GetRoomId(FString& RoomId)
 }
 
 
-void URoomOptions::GetRoomSettings(FChatRoomSettings& Settings)
+void URoomOptions::GetRoomSettings(FChatRoomSettings& Settings) const
 {
 	if (RoomComponent)
 	{

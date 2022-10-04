@@ -6,7 +6,7 @@
 #include "Messenger/Chat/Components/ChatComponent.h"
 
 
-const TArray<FChatMessage> UChatRoom::GetLastMessages(const int32& Number)
+TArray<FChatMessage> UChatRoom::GetLastMessages(const int32& Number) const
 {
 	TArray<FChatMessage> LastMessages;
 
@@ -49,7 +49,7 @@ void UChatRoom::ExitUser(UChatComponent* ChatComponent)
 }
 
 
-TArray<UChatComponent*> UChatRoom::GetActiveChatComponentsOfUser(FString UserId)
+TArray<UChatComponent*> UChatRoom::GetActiveChatComponentsOfUser(FString UserId) const
 {
 	TArray<UChatComponent*> Components;
 	for (auto* Comp : ActiveChatComponents)

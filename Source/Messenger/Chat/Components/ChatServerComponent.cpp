@@ -86,14 +86,14 @@ bool UChatServerComponent::RemoveUser(UChatComponent* ChatComponent, UAuthorizat
 }
 
 
-UChatRoom* UChatServerComponent::GetRoom(const FString& RoomId)
+UChatRoom* UChatServerComponent::GetRoom(const FString& RoomId) const
 {
 	const TObjectPtr<UChatRoom>* Obj = ChatRooms.Find(RoomId);
 	return Obj ? *Obj : nullptr;
 }
 
 
-UChatUser* UChatServerComponent::GetUser(const FString& UserId)
+UChatUser* UChatServerComponent::GetUser(const FString& UserId) const
 {
 	const TObjectPtr<UChatUser>* Obj = Users.Find(UserId);
 	return Obj ? *Obj : nullptr;

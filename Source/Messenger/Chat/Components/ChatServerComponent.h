@@ -27,10 +27,11 @@ public:
 	bool RemoveUser(UChatComponent* ChatComponent, UAuthorizationComponent* AuthorizationComponent);
 
 	UFUNCTION(BlueprintCallable)
-	UChatRoom* GetRoom(const FString& RoomId);
+	UChatRoom* GetRoom(const FString& RoomId) const;
 
 	UFUNCTION(BlueprintCallable)
-	UChatUser* GetUser(const FString& UserId);
+	UChatUser* GetUser(const FString& UserId) const;
+	
 private:
 	UPROPERTY()
 	TMap<FString, TObjectPtr<UChatRoom>> ChatRooms;

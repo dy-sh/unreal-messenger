@@ -20,5 +20,5 @@ class MESSENGER_API USettingsWidget : public UUserWidget
 	void SaveSettings(const FChatSettings& Settings);
 
 	UFUNCTION(BlueprintCallable, Category="Settings")
-	FChatSettings LoadSettings();
+	FChatSettings LoadSettings() const;
 };

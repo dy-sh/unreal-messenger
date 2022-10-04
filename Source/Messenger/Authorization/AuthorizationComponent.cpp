@@ -23,7 +23,7 @@ void UAuthorizationComponent::BeginPlay()
 
 	GenerateEncryptionKeys();
 
-	if (auto* World = GetWorld())
+	if (const auto* World = GetWorld())
 	{
 		if (World->GetNetMode() != ENetMode::NM_DedicatedServer)
 		{
@@ -92,21 +92,21 @@ void UAuthorizationComponent::ExchangeKeysWithServer()
 		return;
 	}
 
-	ServerReceivePublicKey(ClientEncryptionKeys.PublicKey);
+	ServerSetClientPublicKey(ClientEncryptionKeys.PublicKey);
 }
 
 
-void UAuthorizationComponent::ServerReceivePublicKey_Implementation(const FString& ClientPublicKey)
+void UAuthorizationComponent::ServerSetClientPublicKey_Implementation(const FString& ClientPublicKey)
 {
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Client public key received"));
 
 	ClientEncryptionKeys.PublicKey = ClientPublicKey;
 
-	ClientReceivePublicKey(ServerEncryptionKeys.PublicKey);
+	ClientSetServerPublicKey(ServerEncryptionKeys.PublicKey);
 }
 
 
-void UAuthorizationComponent::ClientReceivePublicKey_Implementation(const FString& ServerPublicKey)
+void UAuthorizationComponent::ClientSetServerPublicKey_Implementation(const FString& ServerPublicKey)
 {
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Server public key received"));
 
@@ -126,11 +126,11 @@ void UAuthorizationComponent::ClientReceivePublicKey_Implementation(const FStrin
 		return;
 	}
 
-	ServerReceiveAesKey(EncryptedClientAesKey, EncryptedClientAesIvec);
+	ServerSetClientAesKey(EncryptedClientAesKey, EncryptedClientAesIvec);
 }
 
 
-void UAuthorizationComponent::ServerReceiveAesKey_Implementation(const FString& EncryptedClientAesKey,
+void UAuthorizationComponent::ServerSetClientAesKey_Implementation(const FString& EncryptedClientAesKey,
 	const FString& EncryptedClientAesIvec)
 {
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Client AES key received"));
@@ -182,11 +182,11 @@ void UAuthorizationComponent::ServerReceiveAesKey_Implementation(const FString& 
 		OnEncryptionKeysExchangeComplete.Broadcast();
 	}
 
-	ClientReceiveAesKey(EncryptedServerAesKey, EncryptedServerAesIvec);
+	ClientSetServerAesKey(EncryptedServerAesKey, EncryptedServerAesIvec);
 }
 
 
-void UAuthorizationComponent::ClientReceiveAesKey_Implementation(const FString& EncryptedServerAesKey,
+void UAuthorizationComponent::ClientSetServerAesKey_Implementation(const FString& EncryptedServerAesKey,
 	const FString& EncryptedServerAesIvec)
 {
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Server AES key received"));
@@ -232,11 +232,11 @@ void UAuthorizationComponent::ClientReceiveAesKey_Implementation(const FString& 
 		return;
 	}
 
-	ServerRequestAuthorization(EncryptedData, PayloadSize);
+	ServerAuthorizeClient(EncryptedData, PayloadSize);
 }
 
 
-void UAuthorizationComponent::ServerRequestAuthorization_Implementation(const FString& EncryptedText, const int32 PayloadSize)
+void UAuthorizationComponent::ServerAuthorizeClient_Implementation(const FString& EncryptedText, const int32 PayloadSize)
 {
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Server received client authorization request"));
 
@@ -255,11 +255,11 @@ void UAuthorizationComponent::ServerRequestAuthorization_Implementation(const FS
 		OnAuthorizationComplete.Broadcast(ClientAuthorizationState, ClientEncryptionKeys, ServerEncryptionKeys);
 	}
 
-	ClientRespondAuthorization(ClientAuthorizationState);
+	ClientAuthorizationComplete(ClientAuthorizationState);
 }
 
 
-void UAuthorizationComponent::ClientRespondAuthorization_Implementation(const EAuthorizationState State)
+void UAuthorizationComponent::ClientAuthorizationComplete_Implementation(const EAuthorizationState State)
 {
 	if (State == EAuthorizationState::Authorized)
 	{

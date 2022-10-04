@@ -6,7 +6,7 @@
 #include "Messenger/Chat/Settings/ChatSettingsSave.h"
 
 
-FChatSettings UChatGameInstance::LoadSettings()
+FChatSettings UChatGameInstance::LoadSettings() const
 {
 	auto* Save = Cast<UChatSettingsSave>(UGameplayStatics::LoadGameFromSlot("SaveSlot", 0));
 

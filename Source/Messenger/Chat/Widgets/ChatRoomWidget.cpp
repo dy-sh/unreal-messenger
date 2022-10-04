@@ -10,7 +10,7 @@ void UChatRoomWidget::EnterRoom()
 {
 	if (!GetWorld()) return;
 
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	if (const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 	{
 		if (auto* RoomComponent = PlayerController->FindComponentByClass<URoomComponent>())
 		{

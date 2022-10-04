@@ -67,7 +67,7 @@ void UChatWidget::OnAuthorizationComplete(const EAuthorizationState State, const
 		return;
 	}
 
-	if (auto* GameInstance = Cast<UChatGameInstance>(GetGameInstance()))
+	if (const auto* GameInstance = Cast<UChatGameInstance>(GetGameInstance()))
 	{
 		const FChatSettings Settings = GameInstance->LoadSettings();
 

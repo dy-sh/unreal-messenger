@@ -10,7 +10,7 @@ bool UAddRoomWidget::Initialize()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		if (APlayerController* PlayerController = World->GetFirstPlayerController())
+		if (const APlayerController* PlayerController = World->GetFirstPlayerController())
 		{
 			if (auto* Comp = PlayerController->FindComponentByClass<URoomComponent>())
 			{

@@ -18,7 +18,7 @@ void URoomComponent::BeginPlay()
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
 
-	if (auto* GameMode = GetWorld()->GetAuthGameMode())
+	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
 	{
 		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
 	}
@@ -71,11 +71,11 @@ void URoomComponent::ServerGetJoinedChatRooms_Implementation()
 		}
 	}
 
-	ClientGetJoinedChatRooms(RoomIds, RoomSettings);
+	ClientSetJoinedChatRooms(RoomIds, RoomSettings);
 }
 
 
-void URoomComponent::ClientGetJoinedChatRooms_Implementation(const TArray<FString>& RoomIds,
+void URoomComponent::ClientSetJoinedChatRooms_Implementation(const TArray<FString>& RoomIds,
 	const TArray<FChatRoomSettings>& RoomSettings)
 {
 	for (int i = 0; i < RoomIds.Num(); ++i)
@@ -112,16 +112,15 @@ void URoomComponent::ServerJoinRoom_Implementation(const FString& RoomId)
 
 	ChatComponent->ChatUser->PrivateInfo.JoinedRoomIds.Add(RoomId);
 
-	for (auto* ChatComp : ChatComponent->ChatUser->ChatComponents) 
-	{	
+	for (const auto* ChatComp : ChatComponent->ChatUser->ChatComponents)
+	{
 		if (auto* RoomComp = ChatComp->GetRoomComponent())
 		{
 			RoomComp->ServerGetJoinedChatRooms();
-		}		
+		}
 	}
-	
 
-	for (auto* ChatComp : Room->GetActiveChatComponents())
+	for (const auto* ChatComp : Room->GetActiveChatComponents())
 	{
 		if (auto* RoomComponent = ChatComp->GetRoomComponent())
 		{
@@ -150,8 +149,8 @@ void URoomComponent::ServerLeaveRoom_Implementation(const FString& RoomId)
 
 	ChatComponent->ChatUser->PrivateInfo.JoinedRoomIds.Remove(RoomId);
 
-	for (auto* ChatComp : ChatComponent->ChatUser->ChatComponents) 
-	{		
+	for (const auto* ChatComp : ChatComponent->ChatUser->ChatComponents)
+	{
 		if (auto* RoomComp = ChatComp->GetRoomComponent())
 		{
 			if (RoomComp->GetActiveRoomId() == RoomId)
@@ -159,10 +158,10 @@ void URoomComponent::ServerLeaveRoom_Implementation(const FString& RoomId)
 				RoomComp->ServerExitRoom(RoomId);
 			}
 			RoomComp->ServerGetJoinedChatRooms();
-		}		
+		}
 	}
 
-	for (auto* ChatComp : Room->GetActiveChatComponents())
+	for (const auto* ChatComp : Room->GetActiveChatComponents())
 	{
 		if (auto* RoomComp = ChatComp->GetRoomComponent())
 		{
@@ -237,7 +236,7 @@ void URoomComponent::ServerEditRoomSettings_Implementation(const FString& RoomId
 
 	Room->SetRoomSettings(Settings);
 
-	for (auto* ChatComp : Room->GetActiveChatComponents())
+	for (const auto* ChatComp : Room->GetActiveChatComponents())
 	{
 		if (auto* RoomComponent = ChatComp->GetRoomComponent())
 		{

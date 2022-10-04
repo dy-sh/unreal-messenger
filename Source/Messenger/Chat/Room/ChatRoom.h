@@ -35,7 +35,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<FChatMessage> GetLastMessages(const int32& Number);
+	TArray<FChatMessage> GetLastMessages(const int32& Number) const;
 
 
 	UFUNCTION(BlueprintCallable)
@@ -46,7 +46,7 @@ public:
 	void LeaveUser(const FString& UserId);
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<FString>& GetJoinedUserIds() { return JoinedUserIds; }
+	const TArray<FString>& GetJoinedUserIds() const { return JoinedUserIds; }
 
 
 	UFUNCTION(BlueprintCallable)
@@ -57,11 +57,11 @@ public:
 	void ExitUser(UChatComponent* ChatComponent);
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<UChatComponent*>& GetActiveChatComponents() { return ActiveChatComponents; }
+	const TArray<UChatComponent*>& GetActiveChatComponents() const { return ActiveChatComponents; }
 
 
 	UFUNCTION(BlueprintCallable)
-	TArray<UChatComponent*> GetActiveChatComponentsOfUser(FString UserId);
+	TArray<UChatComponent*> GetActiveChatComponentsOfUser(FString UserId) const;
 
 
 private:

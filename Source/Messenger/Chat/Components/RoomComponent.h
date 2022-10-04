@@ -54,7 +54,7 @@ public:
 	void ServerGetJoinedChatRooms();
 
 	UFUNCTION(Client, Reliable)
-	void ClientGetJoinedChatRooms(const TArray<FString>& RoomIds, const TArray<FChatRoomSettings>& RoomSettings);
+	void ClientSetJoinedChatRooms(const TArray<FString>& RoomIds, const TArray<FChatRoomSettings>& RoomSettings);
 
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
@@ -94,11 +94,11 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	const FString& GetActiveRoomId() { return ActiveRoomId; }
+	const FString& GetActiveRoomId() const { return ActiveRoomId; }
 
 
 	UFUNCTION(BlueprintCallable)
-	const FChatRoomSettings& GetActiveRoomSettings() { return ActiveRoomSettings; }
+	const FChatRoomSettings& GetActiveRoomSettings() const { return ActiveRoomSettings; }
 
 
 private:
