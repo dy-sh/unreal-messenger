@@ -21,4 +21,7 @@ class MESSENGER_API USettingsWidget : public UUserWidget
 
 	UFUNCTION(BlueprintCallable, Category="Settings")
 	FChatSettings LoadSettings() const;
+
+	UFUNCTION(BlueprintCallable, Category="Settings")
+	void DisconnectFromServer();
 };

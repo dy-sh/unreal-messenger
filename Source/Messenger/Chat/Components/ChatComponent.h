@@ -37,6 +37,9 @@ public:
 	void OnAuthorizationComplete(const EAuthorizationState State, const FEncryptionKeys& ClientKeys,
 		const FEncryptionKeys& ServerKeys);
 
+	UFUNCTION(BlueprintCallable)
+	void DisconnectFromServer();
+
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void ServerGetUserInfo();

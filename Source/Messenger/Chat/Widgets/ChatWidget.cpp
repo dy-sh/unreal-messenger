@@ -56,15 +56,13 @@ bool UChatWidget::Initialize()
 void UChatWidget::OnAuthorizationComplete(const EAuthorizationState State, const FEncryptionKeys&
 	ClientEncryptionKeys, const FEncryptionKeys& ServerEncryptionKeys)
 {
-	if (!GetWorld()) return;
-
 	if (State != EAuthorizationState::Authorized)
 	{
-		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+		if (ChatComponent)
 		{
-			PlayerController->ClientTravel("/Game/Messenger/Maps/Connection", TRAVEL_Absolute);
+			ChatComponent->DisconnectFromServer();
+			return;
 		}
-		return;
 	}
 
 	if (const auto* GameInstance = Cast<UChatGameInstance>(GetGameInstance()))

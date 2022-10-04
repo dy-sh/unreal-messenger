@@ -38,3 +38,15 @@ FChatSettings USettingsWidget::LoadSettings() const
 
 	return FChatSettings{};
 }
+
+
+void USettingsWidget::DisconnectFromServer()
+{
+	if (const auto* Controller = GetOwningPlayer())
+	{
+		if (auto* ChatComponent = Controller->FindComponentByClass<UChatComponent>())
+		{
+			ChatComponent->DisconnectFromServer();
+		}
+	}
+}

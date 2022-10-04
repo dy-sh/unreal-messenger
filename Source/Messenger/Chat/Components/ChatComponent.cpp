@@ -62,6 +62,15 @@ void UChatComponent::OnAuthorizationComplete(const EAuthorizationState State, co
 }
 
 
+void UChatComponent::DisconnectFromServer()
+{
+	if (!GetWorld()) return;
+	if (!GetWorld()->GetGameInstance()) return;
+
+	GetWorld()->GetGameInstance()->ReturnToMainMenu();
+}
+
+
 void UChatComponent::ServerGetUserInfo_Implementation()
 {
 	if (ChatUser)
@@ -187,7 +196,7 @@ void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool
 		if (SendEncrypted)
 		{
 			if (!ChatComponent->AuthorizationComponent) return;
-			
+
 			const FEncryptionKeys Keys = ChatComponent->AuthorizationComponent->GetClientEncryptionKeys();
 
 			FChatMessage EncryptedMessage = Message;
