@@ -1,11 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 
 #include "ConnectionWidget.h"
+
+#include "ConnectionSettingsSave.h"
 #include "Components/Button.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
 #include "Components/EditableTextBox.h"
+#include "Kismet/GameplayStatics.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 
 
@@ -51,6 +54,12 @@ bool UConnectionWidget::Initialize()
 			PlayerController->SetShowMouseCursor(true);
 			PlayerController->SetInputMode(InputModeData);
 		}
+	}
+
+	const UConnectionSettingsSave* Settings = LoadSettings();
+	if (Settings && ServerIPTextBox)
+	{
+		ServerIPTextBox->SetText(FText::FromString(Settings->ServerIP));
 	}
 
 	return true;
@@ -103,14 +112,19 @@ void UConnectionWidget::OnFindServerButtonClicked()
 void UConnectionWidget::OnConnectToIPButtonClicked()
 {
 	if (!ServerIPTextBox) return;
+	if (!GetWorld()) return;
 
-	if (const auto* World = GetWorld())
+	const FString ServerIP = ServerIPTextBox->Text.ToString();
+
+	if (UConnectionSettingsSave* Settings = LoadSettings())
 	{
-		if (APlayerController* PlayerController = World->GetFirstPlayerController())
-		{
-			const FString ServerIP = ServerIPTextBox->Text.ToString();
-			PlayerController->ClientTravel(ServerIP, TRAVEL_Absolute);
-		}
+		Settings->ServerIP = ServerIP;
+		SaveSettings(Settings);
+	}
+
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		PlayerController->ClientTravel(ServerIP, TRAVEL_Absolute);
 	}
 }
 
@@ -191,4 +205,25 @@ void UConnectionWidget::OnDestroySession(bool bWasSuccessful)
 
 void UConnectionWidget::OnStartSession(bool bWasSuccessful)
 {
+}
+
+
+UConnectionSettingsSave* UConnectionWidget::LoadSettings() const
+{
+	auto* Save = Cast<UConnectionSettingsSave>(UGameplayStatics::LoadGameFromSlot("ConnectionSettings", 0));
+
+	if (!Save)
+	{
+		Save = Cast<UConnectionSettingsSave>(
+			UGameplayStatics::CreateSaveGameObject(UConnectionSettingsSave::StaticClass()));
+		UGameplayStatics::SaveGameToSlot(Save, "ConnectionSettings", 0);
+	}
+
+	return Save;
+}
+
+
+void UConnectionWidget::SaveSettings(UConnectionSettingsSave* Save) const
+{
+	UGameplayStatics::SaveGameToSlot(Save, "ConnectionSettings", 0);
 }

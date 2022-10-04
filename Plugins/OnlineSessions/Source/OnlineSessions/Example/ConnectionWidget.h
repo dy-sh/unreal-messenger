@@ -1,8 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ConnectionSettingsSave.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSessions/Types.h"
@@ -61,6 +62,12 @@ protected:
 	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
 
-	
+	UFUNCTION()
+	UConnectionSettingsSave* LoadSettings() const;
+
+	UFUNCTION()
+	void SaveSettings(UConnectionSettingsSave* SaveGameObject) const;
+
+
 	void EnableButtons(bool bEnable);
 };
