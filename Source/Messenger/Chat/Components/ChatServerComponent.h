@@ -34,8 +34,8 @@ public:
 	
 private:
 	UPROPERTY()
-	TMap<FString, TObjectPtr<UChatRoom>> ChatRooms;
+	TMap<FString, UChatRoom*> ChatRooms;
 
 	UPROPERTY()
-	TMap<FString, TObjectPtr<UChatUser>> Users;
+	TMap<FString, UChatUser*> Users;
 };
