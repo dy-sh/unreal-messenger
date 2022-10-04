@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ConnectionSettingsSave.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSessions/Types.h"
 #include "ConnectionWidget.generated.h"
 
+class UButton;
+class UEditableTextBox;
+class UConnectionSettingsSave;
+class UOnlineSessionsSubsystem;
 
 UCLASS()
 class ONLINESESSIONS_API UConnectionWidget : public UUserWidget
@@ -21,10 +24,10 @@ public:
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
-	class UButton* StartServerButton;
+	UButton* StartServerButton;
 
 	UPROPERTY(meta = (BindWidget))
-	class UEditableTextBox* ServerIPTextBox;
+	UEditableTextBox* ServerIPTextBox;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* ConnectToIPButton;
@@ -35,7 +38,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FSessionParams SessionParams;
 
-	class UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
+	UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
 
 	
 	virtual bool Initialize() override;

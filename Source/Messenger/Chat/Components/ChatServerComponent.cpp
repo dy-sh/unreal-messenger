@@ -6,7 +6,7 @@
 #include "Messenger/Authorization/AuthorizationComponent.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 #include "Messenger/Chat/User/ChatUser.h"
-#include "OpenSSLEncryption/OpenSSLEncryptionBPLibrary.h"
+#include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
 
 
 bool UChatServerComponent::CreateRoom(const FChatRoomSettings& Settings, FString& RoomId)
@@ -41,7 +41,7 @@ UChatUser* UChatServerComponent::AddUser(UChatComponent* ChatComponent, UAuthori
 	if (AuthorizationComponent->GetClientAuthorizationState() != EAuthorizationState::Authorized) return nullptr;
 
 	const FString ClientPublicKe = AuthorizationComponent->GetClientPublicKey();
-	const FString UserId = UOpenSSLEncryptionBPLibrary::SHA1(ClientPublicKe);
+	const FString UserId = UOpenSSLEncryptionLibrary::SHA1(ClientPublicKe);
 
 	UChatUser* User;
 	if (Users.Contains(UserId))
@@ -74,7 +74,7 @@ bool UChatServerComponent::RemoveUser(UChatComponent* ChatComponent, UAuthorizat
 	if (!AuthorizationComponent) return false;
 
 	const FString ClientPublicKe = AuthorizationComponent->GetClientPublicKey();
-	const FString UserId = UOpenSSLEncryptionBPLibrary::SHA1(ClientPublicKe);
+	const FString UserId = UOpenSSLEncryptionLibrary::SHA1(ClientPublicKe);
 
 	if (!Users.Contains(UserId)) return false;
 

@@ -5,7 +5,7 @@
 #include "ChatServerComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
-#include "OpenSSLEncryption/OpenSSLEncryptionBPLibrary.h"
+#include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 #include "Messenger/Chat/User/ChatUser.h"
 
@@ -111,7 +111,7 @@ void UChatComponent::SendEncryptedMessageToServer(const FString& Text)
 
 	FString EncryptedData;
 	int32 PayloadSize;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptAes(Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
+	if (!UOpenSSLEncryptionLibrary::EncryptAes(Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
 		PayloadSize))
 	{
 		UE_LOG(LogChatComponent, Error, TEXT("Faild to encrypt client message"))
@@ -131,7 +131,7 @@ void UChatComponent::ServerSendEncryptedMessage_Implementation(const FString& En
 	const FEncryptionKeys Keys = AuthorizationComponent->GetServerEncryptionKeys();
 
 	FString DecryptedText;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptAes(EncryptedText, PayloadSize, Keys.AesKey, Keys.AesIvec, DecryptedText))
+	if (!UOpenSSLEncryptionLibrary::DecryptAes(EncryptedText, PayloadSize, Keys.AesKey, Keys.AesIvec, DecryptedText))
 	{
 		UE_LOG(LogChatComponent, Error, TEXT("Faild to decrypt client message"))
 		return;
@@ -151,7 +151,7 @@ void UChatComponent::ClientReceiveEncryptedMessage_Implementation(const FChatMes
 	const FEncryptionKeys Keys = AuthorizationComponent->GetClientEncryptionKeys();
 
 	FString DecryptedText;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptAes(EncryptedMessage.Text, PayloadSize, Keys.AesKey, Keys.AesIvec, DecryptedText))
+	if (!UOpenSSLEncryptionLibrary::DecryptAes(EncryptedMessage.Text, PayloadSize, Keys.AesKey, Keys.AesIvec, DecryptedText))
 	{
 		UE_LOG(LogChatComponent, Error, TEXT("Faild to decrypt client message"))
 		return;
@@ -202,7 +202,7 @@ void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool
 			FChatMessage EncryptedMessage = Message;
 			FString EncryptedData;
 			int32 PayloadSize;
-			if (!UOpenSSLEncryptionBPLibrary::EncryptAes(Message.Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
+			if (!UOpenSSLEncryptionLibrary::EncryptAes(Message.Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
 				PayloadSize))
 			{
 				UE_LOG(LogChatComponent, Error, TEXT("Faild to encrypt server message"))

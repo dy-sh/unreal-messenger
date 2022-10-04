@@ -1,7 +1,7 @@
 // Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 
-#include "OpenSSLEncryptionBPLibrary.h"
+#include "OpenSSLEncryptionLibrary.h"
 
 
 #include "OpenSSLEncryption.h"
@@ -29,7 +29,7 @@ constexpr int AES_AVEC_BYTES = 16;
 #define PRIV_KEY_FILENAME "private.pem"
 
 
-RSA* UOpenSSLEncryptionBPLibrary::CreateRSA(const unsigned char* Key, const bool Public)
+RSA* UOpenSSLEncryptionLibrary::CreateRSA(const unsigned char* Key, const bool Public)
 {
 	BIO* Bio = BIO_new_mem_buf(Key, -1);
 	if (!Bio)
@@ -57,7 +57,7 @@ RSA* UOpenSSLEncryptionBPLibrary::CreateRSA(const unsigned char* Key, const bool
 }
 
 
-void UOpenSSLEncryptionBPLibrary::FStringToCharArray(const FString& String, unsigned char* CharArray)
+void UOpenSSLEncryptionLibrary::FStringToCharArray(const FString& String, unsigned char* CharArray)
 {
 	for (int32 Index = 0; Index != String.Len(); ++Index)
 	{
@@ -66,7 +66,7 @@ void UOpenSSLEncryptionBPLibrary::FStringToCharArray(const FString& String, unsi
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(const FString& Payload, const FString& PublicKey, FString& EncryptedData)
+bool UOpenSSLEncryptionLibrary::EncryptRsaPublic(const FString& Payload, const FString& PublicKey, FString& EncryptedData)
 {
 	unsigned char KeyArr[RSA_PUB_KEY_BYTES] = {};
 	FStringToCharArray(PublicKey, KeyArr);
@@ -96,7 +96,7 @@ bool UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(const FString& Payload, const
 }
 
 
-int UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(const unsigned char* Data, const int DataLength, const unsigned char* Key,
+int UOpenSSLEncryptionLibrary::EncryptRsaPublic(const unsigned char* Data, const int DataLength, const unsigned char* Key,
 	unsigned char* Encrypted)
 {
 	RSA* Rsa = CreateRSA(Key, true);
@@ -105,7 +105,7 @@ int UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(const unsigned char* Data, con
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(const FString& EncryptedData, const FString& PrivateKey, FString& Payload)
+bool UOpenSSLEncryptionLibrary::DecryptRsaPrivate(const FString& EncryptedData, const FString& PrivateKey, FString& Payload)
 {
 	TArray<unsigned char> EncryptedArr;
 	FBase64::Decode(EncryptedData, EncryptedArr);
@@ -131,19 +131,19 @@ bool UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(const FString& EncryptedData
 }
 
 
-FString UOpenSSLEncryptionBPLibrary::GenerateAesKey()
+FString UOpenSSLEncryptionLibrary::GenerateAesKey()
 {
 	return GetRandomString(AES_KEY_BYTES);
 }
 
 
-FString UOpenSSLEncryptionBPLibrary::GenerateAesIvec()
+FString UOpenSSLEncryptionLibrary::GenerateAesIvec()
 {
 	return GetRandomString(AES_AVEC_BYTES);
 }
 
 
-int UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(const unsigned char* Data, const int DataLength, const unsigned char* Key,
+int UOpenSSLEncryptionLibrary::DecryptRsaPrivate(const unsigned char* Data, const int DataLength, const unsigned char* Key,
 	unsigned char* Decrypted)
 {
 	RSA* Rsa = CreateRSA(Key, false);
@@ -152,7 +152,7 @@ int UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(const unsigned char* Data, co
 }
 
 
-int UOpenSSLEncryptionBPLibrary::EncryptPrivate(const unsigned char* Data, const int DataLength, const unsigned char* Key,
+int UOpenSSLEncryptionLibrary::EncryptPrivate(const unsigned char* Data, const int DataLength, const unsigned char* Key,
 	unsigned char* Encrypted)
 {
 	RSA* Rsa = CreateRSA(Key, false);
@@ -161,7 +161,7 @@ int UOpenSSLEncryptionBPLibrary::EncryptPrivate(const unsigned char* Data, const
 }
 
 
-int UOpenSSLEncryptionBPLibrary::DecryptPublic(const unsigned char* Data, const int DataLength, const unsigned char* Key,
+int UOpenSSLEncryptionLibrary::DecryptPublic(const unsigned char* Data, const int DataLength, const unsigned char* Key,
 	unsigned char* Decrypted)
 {
 	RSA* Rsa = CreateRSA(Key, true);
@@ -170,7 +170,7 @@ int UOpenSSLEncryptionBPLibrary::DecryptPublic(const unsigned char* Data, const 
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::EncryptAes(const FString& Payload, const FString& Key, const FString& Ivec,
+bool UOpenSSLEncryptionLibrary::EncryptAes(const FString& Payload, const FString& Key, const FString& Ivec,
 	FString& EncryptedData, int32& PaddedPayloadSize)
 {
 	unsigned char KeyArr[AES_KEY_BYTES] = {};
@@ -208,7 +208,7 @@ bool UOpenSSLEncryptionBPLibrary::EncryptAes(const FString& Payload, const FStri
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::DecryptAes(const FString& EncryptedData, const int32& PaddedPayloadSize, const FString& Key,
+bool UOpenSSLEncryptionLibrary::DecryptAes(const FString& EncryptedData, const int32& PaddedPayloadSize, const FString& Key,
 	const FString& Ivec, FString& Payload)
 {
 	TArray<unsigned char> EncryptedArr;
@@ -237,7 +237,7 @@ bool UOpenSSLEncryptionBPLibrary::DecryptAes(const FString& EncryptedData, const
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::GenerateRsaKeyFiles(const FString& Path)
+bool UOpenSSLEncryptionLibrary::GenerateRsaKeyFiles(const FString& Path)
 {
 	RSA* Rsa = nullptr;
 	BIO* BioPublic = nullptr,* BioPrivate = nullptr;
@@ -271,7 +271,7 @@ bool UOpenSSLEncryptionBPLibrary::GenerateRsaKeyFiles(const FString& Path)
 }
 
 
-bool UOpenSSLEncryptionBPLibrary::ReadRsaKeysFromFile(const FString& Path, FString& OutPublicKey, FString& OutPrivateKey)
+bool UOpenSSLEncryptionLibrary::ReadRsaKeysFromFile(const FString& Path, FString& OutPublicKey, FString& OutPrivateKey)
 {
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -303,7 +303,7 @@ bool UOpenSSLEncryptionBPLibrary::ReadRsaKeysFromFile(const FString& Path, FStri
 }
 
 
-FString UOpenSSLEncryptionBPLibrary::GetRandomString(int32 Length)
+FString UOpenSSLEncryptionLibrary::GetRandomString(int32 Length)
 {
 	FString ValidChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
@@ -319,7 +319,7 @@ FString UOpenSSLEncryptionBPLibrary::GetRandomString(int32 Length)
 }
 
 
-FString UOpenSSLEncryptionBPLibrary::SHA1(const FString& Data)
+FString UOpenSSLEncryptionLibrary::SHA1(const FString& Data)
 {
 	const std::string Str(TCHAR_TO_UTF8(*Data));
 
@@ -333,7 +333,7 @@ FString UOpenSSLEncryptionBPLibrary::SHA1(const FString& Data)
 }
 
 
-void UOpenSSLEncryptionBPLibrary::Test(const FString& Payload)
+void UOpenSSLEncryptionLibrary::Test(const FString& Payload)
 {
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
 

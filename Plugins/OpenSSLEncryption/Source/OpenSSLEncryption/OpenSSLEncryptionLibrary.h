@@ -4,12 +4,12 @@
 
 
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "OpenSSLEncryptionBPLibrary.generated.h"
+#include "OpenSSLEncryptionLibrary.generated.h"
 
 typedef struct rsa_st RSA;
 
 UCLASS()
-class OPENSSLENCRYPTION_API UOpenSSLEncryptionBPLibrary : public UBlueprintFunctionLibrary
+class OPENSSLENCRYPTION_API UOpenSSLEncryptionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

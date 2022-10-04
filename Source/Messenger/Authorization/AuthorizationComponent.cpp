@@ -2,7 +2,7 @@
 
 
 #include "AuthorizationComponent.h"
-#include "OpenSSLEncryption/OpenSSLEncryptionBPLibrary.h"
+#include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
 
 class UChatServerComponent;
 
@@ -40,10 +40,10 @@ void UAuthorizationComponent::GenerateEncryptionKeys()
 	FString PublicKey;
 	FString PrivateKey;
 
-	if (!UOpenSSLEncryptionBPLibrary::ReadRsaKeysFromFile(SavedPath, PublicKey, PrivateKey))
+	if (!UOpenSSLEncryptionLibrary::ReadRsaKeysFromFile(SavedPath, PublicKey, PrivateKey))
 	{
-		UOpenSSLEncryptionBPLibrary::GenerateRsaKeyFiles(SavedPath);
-		UOpenSSLEncryptionBPLibrary::ReadRsaKeysFromFile(SavedPath, PublicKey, PrivateKey);
+		UOpenSSLEncryptionLibrary::GenerateRsaKeyFiles(SavedPath);
+		UOpenSSLEncryptionLibrary::ReadRsaKeysFromFile(SavedPath, PublicKey, PrivateKey);
 	}
 
 	if (PublicKey.IsEmpty() || PrivateKey.IsEmpty())
@@ -56,8 +56,8 @@ void UAuthorizationComponent::GenerateEncryptionKeys()
 	{
 		ServerEncryptionKeys.PublicKey = PublicKey;
 		ServerEncryptionKeys.PrivateKey = PrivateKey;
-		ServerEncryptionKeys.AesKey = UOpenSSLEncryptionBPLibrary::GenerateAesKey();
-		ServerEncryptionKeys.AesIvec = UOpenSSLEncryptionBPLibrary::GenerateAesIvec();
+		ServerEncryptionKeys.AesKey = UOpenSSLEncryptionLibrary::GenerateAesKey();
+		ServerEncryptionKeys.AesIvec = UOpenSSLEncryptionLibrary::GenerateAesIvec();
 		UE_LOG(LogAuthorizationComponent, Display, TEXT("Server keys generated"))
 	}
 
@@ -67,8 +67,8 @@ void UAuthorizationComponent::GenerateEncryptionKeys()
 		{
 			ClientEncryptionKeys.PublicKey = PublicKey;
 			ClientEncryptionKeys.PrivateKey = PrivateKey;
-			ClientEncryptionKeys.AesKey = UOpenSSLEncryptionBPLibrary::GenerateAesKey();
-			ClientEncryptionKeys.AesIvec = UOpenSSLEncryptionBPLibrary::GenerateAesIvec();
+			ClientEncryptionKeys.AesKey = UOpenSSLEncryptionLibrary::GenerateAesKey();
+			ClientEncryptionKeys.AesIvec = UOpenSSLEncryptionLibrary::GenerateAesIvec();
 			UE_LOG(LogAuthorizationComponent, Display, TEXT("Client keys generated"))
 		}
 	}
@@ -113,14 +113,14 @@ void UAuthorizationComponent::ClientSetServerPublicKey_Implementation(const FStr
 	ServerEncryptionKeys.PublicKey = ServerPublicKey;
 
 	FString EncryptedClientAesKey;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(ClientEncryptionKeys.AesKey, ServerPublicKey, EncryptedClientAesKey))
+	if (!UOpenSSLEncryptionLibrary::EncryptRsaPublic(ClientEncryptionKeys.AesKey, ServerPublicKey, EncryptedClientAesKey))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to encrypt client AES key"))
 		return;
 	}
 
 	FString EncryptedClientAesIvec;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(ClientEncryptionKeys.AesIvec, ServerPublicKey, EncryptedClientAesIvec))
+	if (!UOpenSSLEncryptionLibrary::EncryptRsaPublic(ClientEncryptionKeys.AesIvec, ServerPublicKey, EncryptedClientAesIvec))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to encrypt client AES ivec"))
 		return;
@@ -136,7 +136,7 @@ void UAuthorizationComponent::ServerSetClientAesKey_Implementation(const FString
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Client AES key received"));
 
 	FString DecryptedClientAesKey;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(EncryptedClientAesKey, ServerEncryptionKeys.PrivateKey,
+	if (!UOpenSSLEncryptionLibrary::DecryptRsaPrivate(EncryptedClientAesKey, ServerEncryptionKeys.PrivateKey,
 		DecryptedClientAesKey))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to decrypt client AES key"))
@@ -144,7 +144,7 @@ void UAuthorizationComponent::ServerSetClientAesKey_Implementation(const FString
 	}
 
 	FString DecryptedClientAesIvec;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(EncryptedClientAesIvec, ServerEncryptionKeys.PrivateKey,
+	if (!UOpenSSLEncryptionLibrary::DecryptRsaPrivate(EncryptedClientAesIvec, ServerEncryptionKeys.PrivateKey,
 		DecryptedClientAesIvec))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to decrypt client AES ivec"))
@@ -161,7 +161,7 @@ void UAuthorizationComponent::ServerSetClientAesKey_Implementation(const FString
 	ClientEncryptionKeys.AesIvec = DecryptedClientAesIvec;
 
 	FString EncryptedServerAesKey;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(ServerEncryptionKeys.AesKey, ClientEncryptionKeys.PublicKey,
+	if (!UOpenSSLEncryptionLibrary::EncryptRsaPublic(ServerEncryptionKeys.AesKey, ClientEncryptionKeys.PublicKey,
 		EncryptedServerAesKey))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to encrypt server AES key"))
@@ -169,7 +169,7 @@ void UAuthorizationComponent::ServerSetClientAesKey_Implementation(const FString
 	}
 
 	FString EncryptedServerAesIvec;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptRsaPublic(ServerEncryptionKeys.AesIvec, ClientEncryptionKeys.PublicKey,
+	if (!UOpenSSLEncryptionLibrary::EncryptRsaPublic(ServerEncryptionKeys.AesIvec, ClientEncryptionKeys.PublicKey,
 		EncryptedServerAesIvec))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to encrypt server AES ivec"))
@@ -192,7 +192,7 @@ void UAuthorizationComponent::ClientSetServerAesKey_Implementation(const FString
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Server AES key received"));
 
 	FString DecryptedServerAesKey;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(EncryptedServerAesKey, ClientEncryptionKeys.PrivateKey,
+	if (!UOpenSSLEncryptionLibrary::DecryptRsaPrivate(EncryptedServerAesKey, ClientEncryptionKeys.PrivateKey,
 		DecryptedServerAesKey))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to decrypt server AES key"))
@@ -200,7 +200,7 @@ void UAuthorizationComponent::ClientSetServerAesKey_Implementation(const FString
 	}
 
 	FString DecryptedServerAesIvec;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptRsaPrivate(EncryptedServerAesIvec, ClientEncryptionKeys.PrivateKey,
+	if (!UOpenSSLEncryptionLibrary::DecryptRsaPrivate(EncryptedServerAesIvec, ClientEncryptionKeys.PrivateKey,
 		DecryptedServerAesIvec))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to decrypt server AES ivec"))
@@ -225,7 +225,7 @@ void UAuthorizationComponent::ClientSetServerAesKey_Implementation(const FString
 	FString EncryptedMessage;
 	FString EncryptedData;
 	int32 PayloadSize;
-	if (!UOpenSSLEncryptionBPLibrary::EncryptAes("AUTHORIZE", ServerEncryptionKeys.AesKey, ServerEncryptionKeys.AesIvec,
+	if (!UOpenSSLEncryptionLibrary::EncryptAes("AUTHORIZE", ServerEncryptionKeys.AesKey, ServerEncryptionKeys.AesIvec,
 		EncryptedData, PayloadSize))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to encrypt client authorize message"))
@@ -241,7 +241,7 @@ void UAuthorizationComponent::ServerAuthorizeClient_Implementation(const FString
 	UE_LOG(LogAuthorizationComponent, Display, TEXT("Server received client authorization request"));
 
 	FString DecryptedText;
-	if (!UOpenSSLEncryptionBPLibrary::DecryptAes(EncryptedText, PayloadSize, ServerEncryptionKeys.AesKey,
+	if (!UOpenSSLEncryptionLibrary::DecryptAes(EncryptedText, PayloadSize, ServerEncryptionKeys.AesKey,
 		ServerEncryptionKeys.AesIvec, DecryptedText))
 	{
 		UE_LOG(LogAuthorizationComponent, Error, TEXT("Faild to decrypt client authorization request"))
