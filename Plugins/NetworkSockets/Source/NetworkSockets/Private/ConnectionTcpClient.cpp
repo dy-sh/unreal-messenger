@@ -41,8 +41,6 @@ void UConnectionTcpClient::Open()
 
 	if (!Socket) return;
 
-	UE_LOG(LogTcpClient, Display, TEXT("TCP Client: connected to %s:%i"),*ServerIpAddress,ConnectionPort);
-
 	Worker = new FWorker([this] { return TryToConnect(); }, 1.0f);
 	ConnectionThread = FRunnableThread::Create(Worker, TEXT("NetworkSockets TcpClient Thread"));
 }
@@ -72,12 +70,19 @@ EWorkerResult UConnectionTcpClient::TryToConnect()
 {
 	if (Socket->Connect(ServerEndpoint.ToInternetAddr().Get()))
 	{
-		OnSocketConnected(this);
+		UE_LOG(LogTcpClient, Display, TEXT("TCP Client: connected to %s:%i"),*ServerIpAddress,ConnectionPort);
+
+		OnSocketConnected(this); // todo move it!!!
 		StartPolling(Socket);		
 	}
-	else if (bRetryToConnect)
+	else
 	{
-		return EWorkerResult::InProgress;
+		UE_LOG(LogTcpClient, Error, TEXT("TCP Client: faild to connect to %s:%i"),*ServerIpAddress,ConnectionPort);
+		
+		if (bRetryToConnect)
+		{
+			return EWorkerResult::InProgress;
+		}
 	}
 	
 	return EWorkerResult::Completed;

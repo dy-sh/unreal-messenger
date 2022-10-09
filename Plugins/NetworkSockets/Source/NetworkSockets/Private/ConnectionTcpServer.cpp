@@ -37,7 +37,7 @@ void UConnectionTcpServer::Open()
 	         .Build();
 
 	if (!Socket) return;
-
+	
 	UE_LOG(LogTcpServer, Display, TEXT("TCP Server: listening on port %i"),ConnectionPort);
 
 	Worker = new FWorker([this] { return ListenPort(); });

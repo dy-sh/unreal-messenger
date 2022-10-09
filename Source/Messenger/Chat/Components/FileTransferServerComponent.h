@@ -19,8 +19,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="FileTransferServerComponent")
 	int32 ServerPort = 3000;
 
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintCallable, Category="FileTransferServerComponent")
-	bool StartServer();
+	void StartServer();
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferServerComponent")
 	void StopServer();
@@ -34,8 +36,12 @@ public:
 
 	UConnectionHandler* GetConnectionHandler() const { return ConnectionHandler; }
 protected:
+	UPROPERTY()
 	UConnectionHandler* ConnectionHandler;
+	
+	UPROPERTY()
 	UConnectionTcpServer* Server;
 
-	virtual void BeginPlay() override;
+	FTimerHandle StartServerTimerHandle;
+
 };

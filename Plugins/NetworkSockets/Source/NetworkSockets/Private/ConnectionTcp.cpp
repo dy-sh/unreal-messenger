@@ -17,6 +17,7 @@ void UConnectionTcp::StartPolling(FSocket* ConnectionSocket)
 	Worker = new FWorker([this]
 	{
 		FScopeLock ScopeLock(&Lock);
+
 		return ReceivedData();
 	});
 	ConnectionThread = FRunnableThread::Create(Worker, TEXT("NetworkSockets TcpConnection Thread"));

@@ -78,21 +78,21 @@ bool UFileTransferComponent::SendFile(const FString& FilePath)
 
 	if (!FileManager.FileExists(*FilePath))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("File not found: %s"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FilePath);
 		return false;
 	}
 
-	TArray<uint8> FileContent;
-	if (!FFileHelper::LoadFileToArray(FileContent, *FilePath))
+	
+	if (!FFileHelper::LoadFileToArray(FileContentToSend, *FilePath))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to read file %s"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to read file %s"), *FilePath);
 		return false;
 	}
 
 	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp(); // todo: call received file function directly if listen server
 	if (ServerIpAddress.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to get server IP address"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"), *FilePath);
 		return false;
 	}
 	
@@ -117,7 +117,9 @@ void UFileTransferComponent::ClientResponseFileTransferring_Implementation(const
 
 
 void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
-{
+{	
+	TArray<uint8> arr {1,2,3}; // replace to FileContentToSend 
+	ConnectionHandler->Send(arr);
 }
 
 

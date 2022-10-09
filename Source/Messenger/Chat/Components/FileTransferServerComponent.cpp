@@ -1,6 +1,5 @@
 ﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
-
 #include "FileTransferServerComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
@@ -10,27 +9,27 @@ void UFileTransferServerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!GetWorld()) return;
+	
 	StartServer();
 }
 
 
-bool UFileTransferServerComponent::StartServer()
+void UFileTransferServerComponent::StartServer()
 {
 	if (ConnectionHandler)
 	{
 		StopServer();
 	}
-
+	
 	Server = NewObject<UConnectionTcpServer>();
 	Server->Initialize(ServerPort);
-
+	
 	ConnectionHandler = NewObject<UConnectionHandler>();
 	ConnectionHandler->OnConnected.AddDynamic(this, &ThisClass::OnConnected);
 	ConnectionHandler->OnDisconnected.AddDynamic(this, &ThisClass::OnDisconnected);
 	ConnectionHandler->OnReceivedData.AddDynamic(this, &ThisClass::OnReceivedData);
 	ConnectionHandler->Open(Server);
-
-	return true;
 }
 
 
@@ -59,4 +58,5 @@ void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
+	UE_LOG(LogTemp,Warning,L"REC %i",ByteArray.Num());
 }

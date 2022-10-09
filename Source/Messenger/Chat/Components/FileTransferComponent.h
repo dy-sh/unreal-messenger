@@ -40,6 +40,8 @@ protected:
 	UFileTransferServerComponent* FileTransferServerComponent;
 	UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
 
+	TArray<uint8> FileContentToSend;
+
 
 	virtual void BeginPlay() override;
 	
