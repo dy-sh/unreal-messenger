@@ -12,9 +12,9 @@ UConnectionHandler* UConnectionHandler::CreateConnectionHandler()
 }
 
 
-void UConnectionHandler::Open(UConnectionBase* Connection)
+UConnectionHandler* UPARAM(DisplayName="ConnectionHandler") UConnectionHandler::Open(UConnectionBase* Connection)
 {
-	if (!Connection) return;
+	if (!Connection) return nullptr;
 
 	Connections.Empty();
 
@@ -23,6 +23,8 @@ void UConnectionHandler::Open(UConnectionBase* Connection)
 	HandledConnection->OnDisconnected.AddDynamic(this, &ThisClass::OnSocketDisconnected);
 	HandledConnection->OnReceivedData.AddDynamic(this, &ThisClass::OnSocketReceivedData);
 	HandledConnection->Open();
+	
+	return this;
 }
 
 

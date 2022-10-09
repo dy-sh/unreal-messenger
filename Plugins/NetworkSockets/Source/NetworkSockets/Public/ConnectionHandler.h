@@ -36,7 +36,7 @@ public:
 	static UConnectionHandler* CreateConnectionHandler();
 	
 	UFUNCTION(BlueprintCallable, Category = "NetworkSockets")
-	void Open(UConnectionBase* Connection);
+	UConnectionHandler* Open(UConnectionBase* Connection);
 
 	UFUNCTION(BlueprintCallable, Category = "NetworkSockets")
 	void Close();

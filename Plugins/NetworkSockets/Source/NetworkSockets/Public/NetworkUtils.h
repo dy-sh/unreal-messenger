@@ -13,13 +13,13 @@ class NETWORKSOCKETS_API UNetworkUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintPure, Category = "NetworkSockets")
+	UFUNCTION(BlueprintPure, Category = "NetworkSockets|Utils")
 	static void StringToByteArray(const FString& String, TArray<uint8>& ByteArray);
 
-	UFUNCTION(BlueprintPure, Category = "NetworkSockets")
+	UFUNCTION(BlueprintPure, Category = "NetworkSockets|Utils")
 	static FString ByteArrayToString(const TArray<uint8>& ByteArray);
 
-	UFUNCTION(BlueprintPure, Category = "NetworkSockets")
+	UFUNCTION(BlueprintPure, Category = "NetworkSockets|Utils")
 	static bool IpStringToByteArray(FString IpAddress, TArray<uint8>& ByteArray);
 
 	static bool GetEndpoint(const FString& IpAddress, const int32 Port, FIPv4Endpoint& OutEndpoint);
