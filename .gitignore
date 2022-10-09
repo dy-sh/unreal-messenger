@@ -8,3 +8,4 @@ Plugins/Developer/RiderLink
 Build
 .devops
 Messenger.sln.DotSettings.user
+*.lnk

@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "OpenSSLEncryption",
-	"Description": "Plugin to encrypt data using OpenSSL.",
+	"FriendlyName": "NetworkSockets",
+	"Description": "Plugin for data transfer using network sockets.",
 	"Category": "Other",
 	"CreatedBy": "Dmitry Savosh",
 	"CreatedByURL": "",
@@ -16,9 +16,9 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "OpenSSLEncryption",
+			"Name": "NetworkSockets",
 			"Type": "Runtime",
-			"LoadingPhase": "PreLoadingScreen"
+			"LoadingPhase": "Default"
 		}
 	]
 }
