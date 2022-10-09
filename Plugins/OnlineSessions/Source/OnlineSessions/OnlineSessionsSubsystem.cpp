@@ -125,6 +125,9 @@ void UOnlineSessionsSubsystem::DestroySession()
 }
 
 
+
+
+
 void UOnlineSessionsSubsystem::StartSession()
 {
 }
@@ -191,16 +194,45 @@ void UOnlineSessionsSubsystem::OnStartSessionComplete(FName SessionName, bool bW
 }
 
 
-FString UOnlineSessionsSubsystem::GetServerIP()
+bool UOnlineSessionsSubsystem::IsDedicatedServerInstance()
 {
+	return GetWorld() && GetWorld()->GetNetMode() == ENetMode::NM_DedicatedServer;
+}
+
+
+FString UOnlineSessionsSubsystem::GetSessionId()
+{
+	FString SessionId;
+
 	if (const IOnlineSessionPtr Session = IOnlineSubsystem::Get()->GetSessionInterface())
 	{
 		if (const FNamedOnlineSession* NamedSession = Session->GetNamedSession(NAME_GameSession))
 		{
-			return NamedSession->SessionInfo->GetSessionId().ToString();
+			if (IsDedicatedServerInstance())
+			{
+				SessionId.Append(TEXT("steam."));
+			}
+			
+			SessionId.Append(NamedSession->SessionInfo->GetSessionId().ToString());
 		}
 	}
 
-	return FString{};
+	return SessionId;
 }
 
+
+FString UOnlineSessionsSubsystem::GetServerIp()
+{
+	if (const auto* World = GetWorld())
+	{
+		if (const auto* PC = World->GetFirstPlayerController())
+		{
+			if (const auto NetConnection = PC->NetConnection)
+			{
+				return NetConnection->URL.Host;
+			}
+		}
+	}
+	
+	return FString{};
+}

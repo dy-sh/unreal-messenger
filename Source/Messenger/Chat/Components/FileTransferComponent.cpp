@@ -89,7 +89,13 @@ bool UFileTransferComponent::SendFile(const FString& FilePath)
 		return false;
 	}
 
-	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIP();
+	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp(); // todo: call received file function directly if listen server
+	if (ServerIpAddress.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to get server IP address"), *FilePath);
+		return false;
+	}
+	
 	ConnectToServer(ServerIpAddress, ServerPort);
 	
 	return true;

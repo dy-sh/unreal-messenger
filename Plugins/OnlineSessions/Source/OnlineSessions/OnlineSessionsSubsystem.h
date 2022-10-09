@@ -66,5 +66,11 @@ protected:
 	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
 	
 public:
-	FString GetServerIP();
+	bool IsDedicatedServerInstance();
+	
+	UFUNCTION(BlueprintPure,Category="OnlineSessions")
+	FString GetSessionId();
+	
+	UFUNCTION(BlueprintPure,Category="OnlineSessions")
+	FString GetServerIp();
 };
