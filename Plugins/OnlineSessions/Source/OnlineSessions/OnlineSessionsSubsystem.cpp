@@ -189,3 +189,18 @@ void UOnlineSessionsSubsystem::OnDestroySessionComplete(FName SessionName, bool 
 void UOnlineSessionsSubsystem::OnStartSessionComplete(FName SessionName, bool bWasSuccessful)
 {
 }
+
+
+FString UOnlineSessionsSubsystem::GetServerIP()
+{
+	if (const IOnlineSessionPtr Session = IOnlineSubsystem::Get()->GetSessionInterface())
+	{
+		if (const FNamedOnlineSession* NamedSession = Session->GetNamedSession(NAME_GameSession))
+		{
+			return NamedSession->SessionInfo->GetSessionId().ToString();
+		}
+	}
+
+	return FString{};
+}
+

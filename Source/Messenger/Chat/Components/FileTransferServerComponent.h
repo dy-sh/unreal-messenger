@@ -17,7 +17,7 @@ class MESSENGER_API UFileTransferServerComponent : public UActorComponent
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="FileTransferServerComponent")
-	int32 ServerPort;
+	int32 ServerPort = 3000;
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferServerComponent")
 	bool StartServer();

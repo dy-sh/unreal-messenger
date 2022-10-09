@@ -25,9 +25,9 @@ bool UFileTransferServerComponent::StartServer()
 	Server->Initialize(ServerPort);
 
 	ConnectionHandler = NewObject<UConnectionHandler>();
-	ConnectionHandler->OnConnected.AddDynamic(this, %ThisClass::OnConnected);
-	ConnectionHandler->OnDisconnected.AddDynamic(this, %ThisClass::OnDisconnected);
-	ConnectionHandler->OnReceivedData.AddDynamic(this, %ThisClass::OnReceivedData);
+	ConnectionHandler->OnConnected.AddDynamic(this, &ThisClass::OnConnected);
+	ConnectionHandler->OnDisconnected.AddDynamic(this, &ThisClass::OnDisconnected);
+	ConnectionHandler->OnReceivedData.AddDynamic(this, &ThisClass::OnReceivedData);
 	ConnectionHandler->Open(Server);
 
 	return true;

@@ -6,20 +6,27 @@
 #include "Blueprint/UserWidget.h"
 #include "Messenger/Authorization/AuthorizationTypes.h"
 #include "Messenger/Chat/ChatTypes.h"
+#include "Messenger/Chat/Components/FileTransferComponent.h"
 #include "ChatWidget.generated.h"
 
 
-/**
- * 
- */
+class UChatComponent;
+class URoomComponent;
+class UFileTransferComponent;
+
 UCLASS()
 class MESSENGER_API UChatWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-
 	virtual bool Initialize() override;
+
+	UFUNCTION(BlueprintCallable, Category="Chat")
+	void CreateRoom(const FChatRoomSettings& Settings);
+
+	UFUNCTION(BlueprintCallable, Category="Chat")
+	void JoinRoom(const FString& RoomId);
 
 	UFUNCTION()
 	void OnAuthorizationComplete(const EAuthorizationState State, const FEncryptionKeys& ClientEncryptionKeys,
@@ -53,11 +60,11 @@ public:
 	void OnExitRoom(const FString& RoomId);
 
 	UPROPERTY()
-	class UChatComponent* ChatComponent;
-	
+	UChatComponent* ChatComponent;
+
 	UPROPERTY()
-	class URoomComponent* RoomComponent;
+	URoomComponent* RoomComponent;
+
+	UPROPERTY()
+	UFileTransferComponent* FileTransferComponent;
 };
-
-
-

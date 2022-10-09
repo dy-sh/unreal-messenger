@@ -5,6 +5,7 @@
 
 #include "Messenger/Authorization/AuthorizationComponent.h"
 #include "Messenger/Chat/Components/ChatComponent.h"
+#include "Messenger/Chat/Components/FileTransferComponent.h"
 #include "Messenger/Chat/Core/ChatGameInstance.h"
 
 
@@ -42,6 +43,11 @@ bool UChatWidget::Initialize()
 				}
 			}
 
+			if (auto* Comp = PlayerController->FindComponentByClass<UFileTransferComponent>())
+			{
+				FileTransferComponent = Comp;
+			}
+
 			FInputModeUIOnly InputModeData;
 			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			PlayerController->SetShowMouseCursor(true);
@@ -52,6 +58,23 @@ bool UChatWidget::Initialize()
 	return Super::Initialize();
 }
 
+
+void UChatWidget::CreateRoom(const FChatRoomSettings& Settings)
+{
+	if (RoomComponent)
+	{
+		RoomComponent->ServerCreateRoom(Settings);
+	}
+}
+
+
+void UChatWidget::JoinRoom(const FString& RoomId)
+{
+	if (RoomComponent)
+	{
+		RoomComponent->ServerJoinRoom(RoomId);
+	}
+}
 
 void UChatWidget::OnAuthorizationComplete(const EAuthorizationState State, const FEncryptionKeys&
 	ClientEncryptionKeys, const FEncryptionKeys& ServerEncryptionKeys)
@@ -112,24 +135,12 @@ void UChatWidget::SendEncryptedMessage(const FString& Text)
 
 bool UChatWidget::SendFile(const FString& FileName)
 {
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-
-	if (!FileManager.FileExists(*FileName))
+	if (FileTransferComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("File not found: %s"), *FileName);
-		return false;
-	}
-	
-	TArray<uint8> FileContent;
-	if (!FFileHelper::LoadFileToArray(FileContent, *FileName))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to read file %s"), *FileName);
-		return false;
+		return FileTransferComponent->SendFile(FileName);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("%i"), FileContent.Num());
-
-	return true;
+	return false;
 }
 
 
