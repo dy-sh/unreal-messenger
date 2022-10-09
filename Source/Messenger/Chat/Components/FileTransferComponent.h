@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FileDataPackage.h"
 #include "Components/ActorComponent.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 #include "FileTransferComponent.generated.h"
@@ -11,6 +12,8 @@ class UConnectionBase;
 class UConnectionHandler;
 class UConnectionTcpClient;
 class UFileTransferServerComponent;
+
+
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -24,7 +27,7 @@ public:
 	int32 ServerPort = 3000;
 
 	UFileTransferComponent();
-	
+
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
 	bool SendFile(const FString& FilePath);
 
@@ -36,18 +39,18 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsSendingFile() const;
-	
+
 protected:
 	UConnectionHandler* ConnectionHandler;
 	UConnectionTcpClient* Client;
 	UFileTransferServerComponent* FileTransferServerComponent;
 	UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
 
-	TArray<uint8> FileContentToSend;
+	FFileDataPackageInfo FileToSend;
 
 
 	virtual void BeginPlay() override;
-	
+
 	bool ConnectToServer(const FString& IpAddress, const int32 Port);
 	void CloseConnection();
 
@@ -57,4 +60,6 @@ protected:
 	void OnDisconnected(UConnectionBase* Connection);
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
+
+
 };

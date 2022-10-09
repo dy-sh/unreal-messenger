@@ -3,6 +3,7 @@
 #include "FileTransferServerComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
+#include "FileDataPackage.h"
 
 
 void UFileTransferServerComponent::BeginPlay()
@@ -58,5 +59,12 @@ void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
-	UE_LOG(LogTemp,Warning,L"REC %i",ByteArray.Num());
+	UE_LOG(LogTemp,Warning,L"Received %i",ByteArray.Num());
+
+	FFileDataPackageInfo FileReceived;
+	FileDataPackage::DataPackageToFile(ByteArray, FileReceived);
+	
+	UE_LOG(LogTemp,Warning,L"FileName: %s",*FileReceived.FileName);
+	UE_LOG(LogTemp,Warning,L"RoomId: %s",*FileReceived.RoomId);
+	UE_LOG(LogTemp,Warning,L"FileSize: %i",FileReceived.FileContent.Num());
 }
