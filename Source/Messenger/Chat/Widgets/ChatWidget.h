@@ -37,6 +37,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Chat")
 	void SendEncryptedMessage(const FString& Text);
 
+	UFUNCTION(BlueprintCallable, Category="Chat")
+	bool SendFile(const FString& FileName);
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void ShowNewMessage(const FChatMessage& Message);
 

@@ -108,3 +108,30 @@ void UChatWidget::SendEncryptedMessage(const FString& Text)
 		ChatComponent->SendEncryptedMessageToServer(Text);
 	}
 }
+
+
+bool UChatWidget::SendFile(const FString& FileName)
+{
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FileManager.FileExists(*FileName))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("File not found: %s"), *FileName);
+		return false;
+	}
+	
+	TArray<uint8> FileContent;
+	if (!FFileHelper::LoadFileToArray(FileContent, *FileName))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to read file %s"), *FileName);
+		return false;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%i"), FileContent.Num());
+
+	return true;
+}
+
+
+
+

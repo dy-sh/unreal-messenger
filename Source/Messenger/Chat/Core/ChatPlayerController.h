@@ -26,4 +26,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class URoomComponent* ChatRoomComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UFileTransferComponent* FileTransferComponent;
 };

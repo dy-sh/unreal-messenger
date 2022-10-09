@@ -7,6 +7,7 @@
 #include "ChatGameMode.generated.h"
 
 class UChatServerComponent;
+class UFileTransferServerComponent;
 
 UCLASS()
 class MESSENGER_API AChatGameMode : public AGameModeBase
@@ -16,6 +17,9 @@ class MESSENGER_API AChatGameMode : public AGameModeBase
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UChatServerComponent* ChatServerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UFileTransferServerComponent* FileTransferServerComponent;
 	
 	AChatGameMode();
 	
