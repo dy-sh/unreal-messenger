@@ -25,10 +25,10 @@ public:
 	int32 ConnectionPort = 3000;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "NetworkSockets|Socket")
-	int32 ReceiveBufferSize = 2000;
+	int32 ReceiveBufferSize = 10000;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "NetworkSockets|Socket")
-	int32 SendBufferSize = 2000;
+	int32 SendBufferSize = 10000;
 
 	FDataPackage DataPackage;
 	

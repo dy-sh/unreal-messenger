@@ -18,7 +18,7 @@ void UFileTransferComponent::BeginPlay()
 
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
-	
+
 	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
 	{
 		FileTransferServerComponent = GameMode->FindComponentByClass<UFileTransferServerComponent>();
@@ -73,7 +73,8 @@ void UFileTransferComponent::CloseConnection()
 bool UFileTransferComponent::SendFile(const FString& FilePath)
 {
 	if (!OnlineSessionsSubsystem) return false;
-	
+	if (IsSendingFile()) return false;
+
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
 	if (!FileManager.FileExists(*FilePath))
@@ -82,27 +83,30 @@ bool UFileTransferComponent::SendFile(const FString& FilePath)
 		return false;
 	}
 
-	
 	if (!FFileHelper::LoadFileToArray(FileContentToSend, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to read file %s"), *FilePath);
 		return false;
 	}
 
-	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp(); // todo: call received file function directly if listen server
+	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
+	// todo: call received file function directly if listen server
 	if (ServerIpAddress.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"), *FilePath);
 		return false;
 	}
-	
+
 	ConnectToServer(ServerIpAddress, ServerPort);
-	
+
 	return true;
 }
 
 
-
+bool UFileTransferComponent::IsSendingFile() const
+{
+	return FileContentToSend.Num() > 0;
+}
 
 
 void UFileTransferComponent::ServerRequestFileTransferring_Implementation(const FString& FileName, const int32 FileSize,
@@ -117,9 +121,8 @@ void UFileTransferComponent::ClientResponseFileTransferring_Implementation(const
 
 
 void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
-{	
-	TArray<uint8> arr {1,2,3}; // replace to FileContentToSend 
-	ConnectionHandler->Send(arr);
+{
+	ConnectionHandler->Send(FileContentToSend);
 }
 
 
@@ -130,4 +133,21 @@ void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
+}
+
+
+TArray<uint8> UFileTransferComponent::PayloadToDataPackage(const TArray<uint8>& ByteArray)
+{
+	TArray<uint8> PackageByteArray;
+	PackageByteArray.SetNum(ByteArray.Num() + HEADER_SIZE, false);
+
+	// write data length to header (4 bytes for int32)
+	PackageByteArray[0] = ByteArray.Num() >> 24;
+	PackageByteArray[1] = ByteArray.Num() >> 16;
+	PackageByteArray[2] = ByteArray.Num() >> 8;
+	PackageByteArray[3] = ByteArray.Num();
+
+	FMemory::Memcpy(PackageByteArray.GetData() + HEADER_SIZE, ByteArray.GetData(), ByteArray.Num());
+
+	return PackageByteArray;
 }

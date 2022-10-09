@@ -33,6 +33,9 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void ClientResponseFileTransferring(const FString& FileTransferId);
+
+	UFUNCTION(BlueprintPure)
+	bool IsSendingFile() const;
 	
 protected:
 	UConnectionHandler* ConnectionHandler;
