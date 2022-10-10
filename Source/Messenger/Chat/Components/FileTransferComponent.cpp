@@ -8,7 +8,6 @@
 #include "GameFramework/GameModeBase.h"
 
 
-
 void UFileTransferComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -94,8 +93,8 @@ bool UFileTransferComponent::SendFile(const FString& RoomId, const FString& File
 		return false;
 	}
 
-	FileToSend.FileName = "received_file.txt";
-	FileToSend.RoomId = "QWE"; //RoomId
+	FileToSend.FileName = FPaths::GetBaseFilename(FilePath) + "." + FPaths::GetExtension(FilePath);
+	FileToSend.RoomId = RoomId;
 
 	ConnectToServer(ServerIpAddress, ServerPort);
 
@@ -142,5 +141,3 @@ void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
 }
-
-
