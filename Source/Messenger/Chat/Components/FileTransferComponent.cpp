@@ -67,7 +67,7 @@ void UFileTransferComponent::CloseConnection()
 }
 
 
-bool UFileTransferComponent::SendFile(const FString& FilePath)
+bool UFileTransferComponent::SendFile(const FString& RoomId, const FString& FilePath)
 {
 	if (!OnlineSessionsSubsystem) return false;
 	if (IsSendingFile()) return false;
@@ -95,6 +95,7 @@ bool UFileTransferComponent::SendFile(const FString& FilePath)
 	}
 
 	FileToSend.FileName = "received_file.txt";
+	FileToSend.RoomId = "QWE"; //RoomId
 
 	ConnectToServer(ServerIpAddress, ServerPort);
 

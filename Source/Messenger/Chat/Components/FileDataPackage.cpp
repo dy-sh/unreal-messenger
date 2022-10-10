@@ -71,6 +71,6 @@ void FileDataPackage::ReadPayloadFromPackage(const int32 DataSizeBitDepth, const
 	Offset += DataSizeBitDepth;
 
 	Payload.SetNum(Size);
-	FMemory::Memcpy(Payload.GetData(), Package.GetData(), Size);
+	FMemory::Memcpy(Payload.GetData(), Package.GetData() + Offset, Size);
 	Offset += Size;
 }

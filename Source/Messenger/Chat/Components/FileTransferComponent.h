@@ -29,7 +29,7 @@ public:
 	UFileTransferComponent();
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	bool SendFile(const FString& FilePath);
+	bool SendFile(const FString& RoomId, const FString& FilePath);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestFileTransferring(const FString& FileName, const int32 FileSize, const FString& RoomId);

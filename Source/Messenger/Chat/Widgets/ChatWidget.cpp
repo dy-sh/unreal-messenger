@@ -135,9 +135,9 @@ void UChatWidget::SendEncryptedMessage(const FString& Text)
 
 bool UChatWidget::SendFile(const FString& FileName)
 {
-	if (FileTransferComponent)
-	{
-		return FileTransferComponent->SendFile(FileName);
+	if (FileTransferComponent && RoomComponent)
+	{		
+		return FileTransferComponent->SendFile(RoomComponent->GetActiveRoomId(), FileName);
 	}
 
 	return false;

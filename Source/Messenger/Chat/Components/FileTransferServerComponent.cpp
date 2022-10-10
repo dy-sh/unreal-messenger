@@ -63,6 +63,19 @@ void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, c
 
 	FFileDataPackageInfo FileReceived;
 	FileDataPackage::DataPackageToFile(ByteArray, FileReceived);
+
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	FString FilePath="C:\\Users\\Derwish\\Documents\\Unreal Projects\\Messenger\\Saved\\test_file_received.txt";
+	while (FileManager.FileExists(*FilePath))
+	{
+		FilePath+="(1).txt";
+	}
+
+	if (!FFileHelper::SaveArrayToFile(FileReceived.FileContent, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+	}
 	
 	UE_LOG(LogTemp,Warning,L"FileName: %s",*FileReceived.FileName);
 	UE_LOG(LogTemp,Warning,L"RoomId: %s",*FileReceived.RoomId);
