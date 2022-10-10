@@ -33,6 +33,8 @@ public:
 	void OnDisconnected(UConnectionBase* Connection);
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
+	FString GetNotExistFileName(const FString& FilePath) const;
+
 
 	UConnectionHandler* GetConnectionHandler() const { return ConnectionHandler; }
 protected:

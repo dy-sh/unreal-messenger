@@ -12,20 +12,22 @@
 #define MAX_FILENAME_STR 65536 // This buffer has to be big enough to contain the names of all the selected files as well as the null characters between them and the null character at the end
 
 
-bool UFileUtilsLibrary::OpenFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, EEasyFileDialogFlags Flags, TArray< FString >& OutFilenames)
+
+bool UFileUtilsLibrary::OpenFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile,
+	const FString& FileTypes, EEasyFileDialogFlags Flags, TArray<FString>& OutFilenames)
 {
 	// Calling the core class function for open file dialog
-	return  UFileUtilsLibrary::OpenFileDialogCore(DialogTitle, DefaultPath, DefaultFile, FileTypes, Flags, OutFilenames);
+	return UFileUtilsLibrary::OpenFileDialogCore(DialogTitle, DefaultPath, DefaultFile, FileTypes, Flags, OutFilenames);
 }
 
 
-
-bool UFileUtilsLibrary::SaveFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypeDescription, const FString& FileType, EEasyFileDialogFlags Flags, TArray<FString>& OutFilenames)
+bool UFileUtilsLibrary::SaveFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile,
+	const FString& FileTypeDescription, const FString& FileType, EEasyFileDialogFlags Flags, TArray<FString>& OutFilenames)
 {
 	// Saving the file type and file type description to append and Removing . if user provides any
 	FString TempFileType = FileType.Replace(TEXT("."), TEXT(""));
-  
-	FString TempFileTypeDescription = FileTypeDescription;  
+
+	FString TempFileTypeDescription = FileTypeDescription;
 
 	// Setting description if user did not provide any
 	if (TempFileTypeDescription.IsEmpty())
@@ -47,19 +49,24 @@ bool UFileUtilsLibrary::OpenFolderDialog(const FString& DialogTitle, const FStri
 	return UFileUtilsLibrary::OpenFolderDialogCore(DialogTitle, DefaultPath, OutFolderName);
 }
 
-bool UFileUtilsLibrary::OpenFileDialogCore(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray< FString >& OutFilenames)
+
+bool UFileUtilsLibrary::OpenFileDialogCore(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile,
+	const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames)
 {
 	// Calling the FileDialogShared function using save parameter with false. 
-	int OutFilterIndex=0;
-	return FileDialogShared(false, nullptr, DialogTitle, DefaultPath, DefaultFile, FileTypes, Flags, OutFilenames,OutFilterIndex);
+	int OutFilterIndex = 0;
+	return FileDialogShared(false, nullptr, DialogTitle, DefaultPath, DefaultFile, FileTypes, Flags, OutFilenames, OutFilterIndex);
 }
 
-bool UFileUtilsLibrary::SaveFileDialogCore(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray< FString >& OutFilenames)
+
+bool UFileUtilsLibrary::SaveFileDialogCore(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile,
+	const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames)
 {
 	// Calling the FileDialogShared function using save parameter. 
 	int OutFilterIndex = 0;
 	return FileDialogShared(true, nullptr, DialogTitle, DefaultPath, DefaultFile, FileTypes, Flags, OutFilenames, OutFilterIndex);
 }
+
 
 bool UFileUtilsLibrary::OpenFolderDialogCore(const FString& DialogTitle, const FString& DefaultPath, FString& OutFoldername)
 {
@@ -67,7 +74,10 @@ bool UFileUtilsLibrary::OpenFolderDialogCore(const FString& DialogTitle, const F
 	return OpenFolderDialogInner(NULL, DialogTitle, DefaultPath, OutFoldername);
 }
 
-bool UFileUtilsLibrary::FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex)
+
+bool UFileUtilsLibrary::FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle,
+	const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames,
+	int32& OutFilterIndex)
 {
 #pragma region Windows
 	//FScopedSystemModalMode SystemModalScope;
@@ -129,7 +139,7 @@ bool UFileUtilsLibrary::FileDialogShared(bool bSave, const void* ParentWindowHan
 	FMemory::Memzero(&ofn, sizeof(OPENFILENAME));
 
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = (HWND)ParentWindowHandle;
+	ofn.hwndOwner = (HWND) ParentWindowHandle;
 	ofn.lpstrFilter = FileTypesPtr;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = Filename;
@@ -245,7 +255,9 @@ bool UFileUtilsLibrary::FileDialogShared(bool bSave, const void* ParentWindowHan
 	return false;
 }
 
-bool UFileUtilsLibrary:: OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName)
+
+bool UFileUtilsLibrary::OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle,
+	const FString& DefaultPath, FString& OutFolderName)
 {
 	//FScopedSystemModalMode SystemModalScope;
 
@@ -297,4 +309,26 @@ bool UFileUtilsLibrary:: OpenFolderDialogInner(const void* ParentWindowHandle, c
 	}
 
 	return bSuccess;
+}
+
+
+FString UFileUtilsLibrary::GetNotExistFileName(const FString& FilePath)
+{
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FileManager.FileExists(*FilePath)) return FilePath;
+
+	for (int32 i = 1; i < 99999; ++i)
+	{
+		FString NewFilePath = FPaths::Combine(
+			*FPaths::GetPath(FilePath),
+			FString::Printf(TEXT("%s(%i).%s"),
+				*FPaths::GetBaseFilename(FilePath), i, *FPaths::GetExtension(FilePath)));
+		if (!FileManager.FileExists(*NewFilePath))
+		{
+			return NewFilePath;
+		}
+	}
+
+	return FString{};
 }

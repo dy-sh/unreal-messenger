@@ -10,7 +10,7 @@ public class Messenger : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "OnlineSessions", "OpenSSLEncryption", "NetworkSockets"});
+		PrivateDependencyModuleNames.AddRange(new string[] { "OnlineSessions", "OpenSSLEncryption", "NetworkSockets", "FileUtils" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

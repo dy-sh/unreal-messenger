@@ -4,6 +4,7 @@
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
 #include "FileDataPackage.h"
+#include "FileUtilsLibrary.h"
 
 
 void UFileTransferServerComponent::BeginPlay()
@@ -11,7 +12,7 @@ void UFileTransferServerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	if (!GetWorld()) return;
-	
+
 	StartServer();
 }
 
@@ -22,10 +23,10 @@ void UFileTransferServerComponent::StartServer()
 	{
 		StopServer();
 	}
-	
+
 	Server = NewObject<UConnectionTcpServer>();
 	Server->Initialize(ServerPort);
-	
+
 	ConnectionHandler = NewObject<UConnectionHandler>();
 	ConnectionHandler->OnConnected.AddDynamic(this, &ThisClass::OnConnected);
 	ConnectionHandler->OnDisconnected.AddDynamic(this, &ThisClass::OnDisconnected);
@@ -59,25 +60,45 @@ void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
-	UE_LOG(LogTemp,Warning,L"Received %i",ByteArray.Num());
+	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
 
 	FFileDataPackageInfo FileReceived;
 	FileDataPackage::DataPackageToFile(ByteArray, FileReceived);
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
-	FString FilePath="C:\\Users\\Derwish\\Documents\\Unreal Projects\\Messenger\\Saved\\test_file_received.txt";
-	while (FileManager.FileExists(*FilePath))
-	{
-		FilePath+="(1).txt";
-	}
+	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+	FString FilePath = SavedPath + FileReceived.FileName;
+	FilePath = GetNotExistFileName(FilePath);
 
 	if (!FFileHelper::SaveArrayToFile(FileReceived.FileContent, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
 	}
-	
-	UE_LOG(LogTemp,Warning,L"FileName: %s",*FileReceived.FileName);
-	UE_LOG(LogTemp,Warning,L"RoomId: %s",*FileReceived.RoomId);
-	UE_LOG(LogTemp,Warning,L"FileSize: %i",FileReceived.FileContent.Num());
+
+	UE_LOG(LogTemp, Warning, L"FileName: %s", *FileReceived.FileName);
+	UE_LOG(LogTemp, Warning, L"RoomId: %s", *FileReceived.RoomId);
+	UE_LOG(LogTemp, Warning, L"FileSize: %i", FileReceived.FileContent.Num());
+}
+
+
+FString UFileTransferServerComponent::GetNotExistFileName(const FString& FilePath) const
+{
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FileManager.FileExists(*FilePath)) return FilePath;
+
+	for (int32 i = 1; i < 99999; ++i)
+	{
+		FString NewFilePath = FPaths::Combine(
+			*FPaths::GetPath(FilePath),
+			FString::Printf(TEXT("%s(%i).%s"),
+				*FPaths::GetBaseFilename(FilePath), i, *FPaths::GetExtension(FilePath)));
+		if (!FileManager.FileExists(*NewFilePath))
+		{
+			return NewFilePath;
+		}
+	}
+
+	return FString{};
 }

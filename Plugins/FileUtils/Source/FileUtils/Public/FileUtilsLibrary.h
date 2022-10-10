@@ -25,15 +25,15 @@ class FILEUTILS_API UFileUtilsLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 public:
 	// Open File Dialog
-	UFUNCTION(BlueprintCallable, Category = "EasyFileDialog")
+	UFUNCTION(BlueprintCallable, Category = "FileUtils")
 		static bool OpenFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, EEasyFileDialogFlags Flags, TArray< FString >& OutFilenames);
 
 	// Save File Dialog
-	UFUNCTION(BlueprintCallable, Category = "EasyFileDialog")
+	UFUNCTION(BlueprintCallable, Category = "FileUtils")
 		static bool SaveFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypeDescription, const FString& FileType, EEasyFileDialogFlags Flags, TArray< FString >& OutFilenames);
 
 	// Open Folder Dialog
-	UFUNCTION(BlueprintCallable, Category = "EasyFileDialog")
+	UFUNCTION(BlueprintCallable, Category = "FileUtils")
 		static bool OpenFolderDialog(const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
 
 	// Open file dialog core, called from the blueprint function library
@@ -45,11 +45,13 @@ public:
 	// Open folder dialog core, called from the blueprint function library
 	static bool OpenFolderDialogCore(const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
 
-
+	UFUNCTION(BlueprintCallable, Category = "FileUtils")
+	static FString GetNotExistFileName(const FString& FilePath);
 private:
 	// Both open file dialog and save file dialog using this same function with different save parameter.
 	static bool FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex);
 	
 	// The main Open folder dialog functionalities
 	static bool OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
+
 };
