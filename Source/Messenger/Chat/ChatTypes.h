@@ -62,7 +62,7 @@ struct FChatRoomSettings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString RoomName;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool AutoAcceptUsers;
 };
@@ -77,3 +77,29 @@ struct FChatSettings
 };
 
 
+USTRUCT(BlueprintType)
+struct FTransferredFileInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FileId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString RoomId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString UserId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString UserName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FileName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SavedFileName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FDateTime Date;
+};

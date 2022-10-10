@@ -1,10 +1,17 @@
 ﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 #include "FileTransferServerComponent.h"
+
+#include "ChatComponent.h"
+#include "ChatServerComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
 #include "FileDataPackage.h"
 #include "FileUtilsLibrary.h"
+#include "Messenger/Chat/ChatTypes.h"
+#include "GameFramework/GameModeBase.h"
+#include "Messenger/Authorization/AuthorizationComponent.h"
+#include "Messenger/Chat/Room/ChatRoom.h"
 
 
 void UFileTransferServerComponent::BeginPlay()
@@ -14,6 +21,11 @@ void UFileTransferServerComponent::BeginPlay()
 	if (!GetWorld()) return;
 
 	StartServer();
+
+	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
+	{
+		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
+	}
 }
 
 
@@ -62,24 +74,81 @@ void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, c
 {
 	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
 
-	FFileDataPackageInfo FileReceived;
-	FileDataPackage::DataPackageToFile(ByteArray, FileReceived);
+	FFileDataPackageInfo ReceivedFile;
+	FileDataPackage::DataPackageToFile(ByteArray, ReceivedFile);
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + FileReceived.FileName;
+	FString FilePath = SavedPath + ReceivedFile.FileName;
 	FilePath = GetNotExistFileName(FilePath);
 
-	if (!FFileHelper::SaveArrayToFile(FileReceived.FileContent, *FilePath))
+	if (!FFileHelper::SaveArrayToFile(ReceivedFile.FileContent, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
 	}
 
-	UE_LOG(LogTemp, Warning, L"FileName: %s", *FileReceived.FileName);
-	UE_LOG(LogTemp, Warning, L"RoomId: %s", *FileReceived.RoomId);
-	UE_LOG(LogTemp, Warning, L"FileSize: %i", FileReceived.FileContent.Num());
+	UE_LOG(LogTemp, Warning, L"RoomId: %s", *ReceivedFile.RoomId);
+	UE_LOG(LogTemp, Warning, L"UserId: %s", *ReceivedFile.UserId);
+	UE_LOG(LogTemp, Warning, L"FileName: %s", *ReceivedFile.FileName);
+	UE_LOG(LogTemp, Warning, L"FileSize: %i", ReceivedFile.FileContent.Num());
+
+	FTransferredFileInfo FileInfo;
+	FileInfo.RoomId = ReceivedFile.RoomId;
+	FileInfo.UserId = ReceivedFile.UserId;
+	FileInfo.UserName = "User";
+	FileInfo.FileId = FGuid::NewGuid().ToString();
+	FileInfo.FileName = ReceivedFile.FileName;
+	FileInfo.SavedFileName = FilePath;
+	FileInfo.Date = FDateTime::Now();
+	
+	SendFileInfoToAllUsersInRoom(FileInfo,false);
 }
+
+
+void UFileTransferServerComponent::SendFileToClient(const FTransferredFileInfo& FileInfo)
+{
+	
+}
+
+
+void UFileTransferServerComponent::SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, const bool SendEncrypted)
+{
+	if (!ChatServerComponent) return;
+
+	auto* Room = ChatServerComponent->GetRoom(FileInfo.RoomId);
+	if (!Room) return;
+
+	Room->AddFileInfo(FileInfo);
+
+	for (auto* ChatComponent : Room->GetActiveChatComponents())
+	{
+		if (SendEncrypted)
+		{
+			// if (!ChatComponent->GetAuthorizationComponent()) return;
+			//
+			// const FEncryptionKeys Keys = ChatComponent->GetAuthorizationComponent()->GetClientEncryptionKeys();
+			//
+			// FChatMessage EncryptedMessage = Message;
+			// FString EncryptedData;
+			// int32 PayloadSize;
+			// if (!UOpenSSLEncryptionLibrary::EncryptAes(Message.Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
+			// 	PayloadSize))
+			// {
+			// 	UE_LOG(LogChatComponent, Error, TEXT("Faild to encrypt server message"))
+			// 	return;
+			// }
+			//
+			// EncryptedMessage.Text = EncryptedData;
+			// ChatComponent->ClientReceiveEncryptedFileInfo(EncryptedMessage, PayloadSize);
+		}
+		else
+		{
+			ChatComponent->ClientReceiveFileInfo(FileInfo);
+		}
+	}
+}
+
+
 
 
 FString UFileTransferServerComponent::GetNotExistFileName(const FString& FilePath) const

@@ -2,11 +2,19 @@
 
 
 #include "FileTransferComponent.h"
+
+#include "ChatComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpClient.h"
 #include "FileTransferServerComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "OnlineSessions/OnlineSessionsSubsystem.h"
 
+
+UFileTransferComponent::UFileTransferComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
 
 void UFileTransferComponent::BeginPlay()
 {
@@ -20,6 +28,8 @@ void UFileTransferComponent::BeginPlay()
 		FileTransferServerComponent = GameMode->FindComponentByClass<UFileTransferServerComponent>();
 	}
 
+	ChatComponent = GetOwner()->FindComponentByClass<UChatComponent>();
+
 	if (const auto* GameInstance = GetWorld()->GetGameInstance())
 	{
 		OnlineSessionsSubsystem = GameInstance->GetSubsystem<UOnlineSessionsSubsystem>();
@@ -27,17 +37,14 @@ void UFileTransferComponent::BeginPlay()
 }
 
 
-UFileTransferComponent::UFileTransferComponent()
-{
-	SetIsReplicatedByDefault(true);
-}
-
 
 bool UFileTransferComponent::ConnectToServer(const FString& IpAddress, const int32 Port)
 {
 	if (ConnectionHandler)
 	{
+		const EFileTransferringState TempState = State;
 		CloseConnection();
+		State = TempState;
 	}
 
 	Client = NewObject<UConnectionTcpClient>();
@@ -55,6 +62,8 @@ bool UFileTransferComponent::ConnectToServer(const FString& IpAddress, const int
 
 void UFileTransferComponent::CloseConnection()
 {
+	State = EFileTransferringState::None;
+	
 	if (ConnectionHandler)
 	{
 		ConnectionHandler->Close();
@@ -66,16 +75,16 @@ void UFileTransferComponent::CloseConnection()
 }
 
 
-bool UFileTransferComponent::SendFile(const FString& RoomId, const FString& FilePath)
+bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
 {
 	if (!OnlineSessionsSubsystem) return false;
-	if (IsSendingFile()) return false;
+	if (State != EFileTransferringState::None) return false;
 
 	// todo: call received file function directly if listen server
 	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
 	if (ServerIpAddress.IsEmpty())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
 		return false;
 	}
 
@@ -95,41 +104,60 @@ bool UFileTransferComponent::SendFile(const FString& RoomId, const FString& File
 
 	FileToSend.FileName = FPaths::GetBaseFilename(FilePath) + "." + FPaths::GetExtension(FilePath);
 	FileToSend.RoomId = RoomId;
+	FileToSend.UserId = ChatComponent->GetUserInfo().UserID;
 
+	State = EFileTransferringState::SendingFile;
 	ConnectToServer(ServerIpAddress, ServerPort);
 
 	return true;
 }
 
 
-bool UFileTransferComponent::IsSendingFile() const
+bool UFileTransferComponent::DownloadFileFromServer(const FTransferredFileInfo& FileInfo)
 {
-	return FileToSend.FileContent.Num() > 0;
-}
+	if (!OnlineSessionsSubsystem) return false;
+	if (State != EFileTransferringState::None) return false;
 
+	// todo: call received file function directly if listen server
+	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
+	if (ServerIpAddress.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
+		return false;
+	}
 
-void UFileTransferComponent::ServerRequestFileTransferring_Implementation(const FString& FileName, const int32 FileSize,
-	const FString& RoomId)
-{
-}
+	FileToDownload = FileInfo;
 
-
-void UFileTransferComponent::ClientResponseFileTransferring_Implementation(const FString& FileTransferId)
-{
+	State = EFileTransferringState::DownloadingFile;
+	ConnectToServer(ServerIpAddress, ServerPort);
+	return true;
 }
 
 
 void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 {
-	if (FileToSend.FileContent.Num() == 0)
+	if (State == EFileTransferringState::SendingFile)
+	{
+		// if (FileToSend.FileContent.Num() == 0)
+		// {
+		// 	CloseConnection();
+		// 	return;
+		// }
+
+		TArray<uint8> Package;
+		FileDataPackage::FileToDataPackage(FileToSend, Package);
+		ConnectionHandler->Send(Package);
+		// FileToSend = FFileDataPackageInfo{};
+		// CloseConnection();
+	}
+	else if (State == EFileTransferringState::DownloadingFile)
+	{
+		ServerGetFile(FileToDownload);
+	}
+	else
 	{
 		CloseConnection();
-		return;
 	}
-
-	TArray<uint8> Package;
-	FileDataPackage::FileToDataPackage(FileToSend, Package);
-	ConnectionHandler->Send(Package);
 }
 
 
@@ -140,4 +168,12 @@ void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
+}
+
+void UFileTransferComponent::ServerGetFile_Implementation(const FTransferredFileInfo& FileInfo)
+{
+	if (FileTransferServerComponent)
+	{
+		FileTransferServerComponent->SendFileToClient(FileInfo);
+	}
 }

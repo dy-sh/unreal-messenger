@@ -13,6 +13,7 @@ struct FFileDataPackageInfo
 	GENERATED_BODY();
 	
 	FString RoomId;
+	FString UserId;
 	FString FileName;
 	TArray<uint8> FileContent;
 };

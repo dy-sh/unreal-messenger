@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RoomComponent.h"
 #include "Messenger/Authorization/AuthorizationTypes.h"
 #include "Messenger/Chat/ChatTypes.h"
 #include "Messenger/Chat/User/ChatUser.h"
@@ -12,8 +11,11 @@
 class UChatServerComponent;
 class UAuthorizationComponent;
 class UChatUser;
+class URoomComponent;
+class UFileTransferComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageReceived, const FChatMessage&, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFileInfoReceived, const FTransferredFileInfo&, FileInfo);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -25,8 +27,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMessageReceived OnMessageReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnFileInfoReceived OnFileInfoReceived;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UChatUser* ChatUser;
+
 
 	UChatComponent();
 
@@ -64,26 +70,42 @@ public:
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void ClientReceiveEncryptedMessage(const FChatMessage& EncryptedMessage, const int32 PayloadSize);
 
+	
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void ClientReceiveFileInfo(const FTransferredFileInfo& FileInfo);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void ServerGetFile(const FTransferredFileInfo& FileInfo);
+
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void ServerChangeUserName(const FString& NewName);
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE URoomComponent* GetRoomComponent() const { return RoomComponent; }
-
-
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	const FUserInfo& GetUserInfo() const { return ChatUser ? ChatUser->Info : UserInfo; }
 
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	const FUserPrivateInfo& GetUserPrivateInfo() const { return ChatUser ? ChatUser->PrivateInfo : UserPrivateInfo; }
 
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE URoomComponent* GetRoomComponent() const { return RoomComponent; }
+
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UAuthorizationComponent* GetAuthorizationComponent() const { return AuthorizationComponent; }
+
 private:
+	UPROPERTY()
 	UAuthorizationComponent* AuthorizationComponent;
+	UPROPERTY()
 	UChatServerComponent* ChatServerComponent;
+	UPROPERTY()
 	URoomComponent* RoomComponent;
+	UPROPERTY()
+	UFileTransferComponent* FileTransferComponent;
+
 	FUserInfo UserInfo;
 	FUserPrivateInfo UserPrivateInfo;
 

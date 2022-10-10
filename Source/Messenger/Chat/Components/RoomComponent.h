@@ -102,8 +102,11 @@ public:
 
 
 private:
+	UPROPERTY()
 	UChatComponent* ChatComponent;
+	UPROPERTY()
 	UAuthorizationComponent* AuthorizationComponent;
+	UPROPERTY()
 	UChatServerComponent* ChatServerComponent;
 	FString ActiveRoomId;
 	FChatRoomSettings ActiveRoomSettings;

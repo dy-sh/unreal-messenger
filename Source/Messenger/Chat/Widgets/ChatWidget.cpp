@@ -6,6 +6,7 @@
 #include "Messenger/Authorization/AuthorizationComponent.h"
 #include "Messenger/Chat/Components/ChatComponent.h"
 #include "Messenger/Chat/Components/FileTransferComponent.h"
+#include "Messenger/Chat/Components/RoomComponent.h"
 #include "Messenger/Chat/Core/ChatGameInstance.h"
 
 
@@ -19,6 +20,7 @@ bool UChatWidget::Initialize()
 			{
 				ChatComponent = Comp;
 				ChatComponent->OnMessageReceived.AddDynamic(this, &ThisClass::OnMessageReceived);
+				ChatComponent->OnFileInfoReceived.AddDynamic(this, &ThisClass::OnFileInfoReceived);
 			}
 
 			if (auto* Comp = PlayerController->FindComponentByClass<URoomComponent>())
@@ -105,6 +107,11 @@ void UChatWidget::OnMessageReceived(const FChatMessage& Message)
 	ShowNewMessage(Message);
 }
 
+void UChatWidget::OnFileInfoReceived(const FTransferredFileInfo& FileInfo)
+{
+	ShowFileInfo(FileInfo);
+}
+
 
 void UChatWidget::OnJoinRoom(const FString& RoomId, const FUserInfo& User)
 {
@@ -137,7 +144,7 @@ bool UChatWidget::SendFile(const FString& FileName)
 {
 	if (FileTransferComponent && RoomComponent)
 	{		
-		return FileTransferComponent->SendFile(RoomComponent->GetActiveRoomId(), FileName);
+		return FileTransferComponent->SendFileToServer(RoomComponent->GetActiveRoomId(), FileName);
 	}
 
 	return false;

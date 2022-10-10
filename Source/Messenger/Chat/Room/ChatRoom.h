@@ -35,7 +35,13 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FChatMessage> GetLastMessages(const int32& Number) const;
+	TArray<FChatMessage> GetLastMessages(const int32 Number);
+
+	UFUNCTION(BlueprintCallable)
+	void AddFileInfo(const FTransferredFileInfo& FileInfo) { FileInfos.Add(FileInfo); }
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FTransferredFileInfo> GetLastFileInfos(const int32 Number);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -57,7 +63,7 @@ public:
 	void ExitUser(UChatComponent* ChatComponent);
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<UChatComponent*>& GetActiveChatComponents() const { return ActiveChatComponents; }
+	TArray<UChatComponent*> GetActiveChatComponents() const { return ActiveChatComponents; }
 
 
 	UFUNCTION(BlueprintCallable)
@@ -68,6 +74,7 @@ private:
 	FString RoomId;
 	FChatRoomSettings RoomSettings;
 	TArray<FChatMessage> ChatMessages;
+	TArray<FTransferredFileInfo> FileInfos;
 	TArray<FString> JoinedUserIds;
 	TArray<UChatComponent*> ActiveChatComponents;
 };

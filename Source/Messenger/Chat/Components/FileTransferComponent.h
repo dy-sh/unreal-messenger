@@ -5,16 +5,24 @@
 #include "CoreMinimal.h"
 #include "FileDataPackage.h"
 #include "Components/ActorComponent.h"
-#include "OnlineSessions/OnlineSessionsSubsystem.h"
+#include "Messenger/Chat/ChatTypes.h"
 #include "FileTransferComponent.generated.h"
 
 class UConnectionBase;
 class UConnectionHandler;
 class UConnectionTcpClient;
 class UFileTransferServerComponent;
+class UOnlineSessionsSubsystem;
+class UChatComponent;
 
 
-
+UENUM(BlueprintType)
+enum class EFileTransferringState:uint8
+{
+	None,
+	SendingFile,
+	DownloadingFile,
+};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class MESSENGER_API UFileTransferComponent : public UActorComponent
@@ -29,24 +37,34 @@ public:
 	UFileTransferComponent();
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	bool SendFile(const FString& RoomId, const FString& FilePath);
+	bool SendFileToServer(const FString& RoomId, const FString& FilePath);
+
+	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
+	bool DownloadFileFromServer(const FTransferredFileInfo& FileInfo);
 
 	UFUNCTION(Server, Reliable)
-	void ServerRequestFileTransferring(const FString& FileName, const int32 FileSize, const FString& RoomId);
+	void ServerGetFile(const FTransferredFileInfo& FileInfo);
 
-	UFUNCTION(Client, Reliable)
-	void ClientResponseFileTransferring(const FString& FileTransferId);
+	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
+	EFileTransferringState GetState() const { return State; }
 
-	UFUNCTION(BlueprintPure)
-	bool IsSendingFile() const;
 
 protected:
+	UPROPERTY()
 	UConnectionHandler* ConnectionHandler;
+	UPROPERTY()
 	UConnectionTcpClient* Client;
+	UPROPERTY()
 	UFileTransferServerComponent* FileTransferServerComponent;
+	UPROPERTY()
 	UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
+	UPROPERTY()
+	UChatComponent* ChatComponent;
 
 	FFileDataPackageInfo FileToSend;
+	FTransferredFileInfo FileToDownload;
+
+	EFileTransferringState State;
 
 
 	virtual void BeginPlay() override;
@@ -60,6 +78,4 @@ protected:
 	void OnDisconnected(UConnectionBase* Connection);
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
-
-
 };

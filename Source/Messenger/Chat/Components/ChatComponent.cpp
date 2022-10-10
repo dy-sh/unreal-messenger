@@ -3,6 +3,8 @@
 #include "ChatComponent.h"
 
 #include "ChatServerComponent.h"
+#include "FileTransferComponent.h"
+#include "RoomComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
 #include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
@@ -45,6 +47,7 @@ void UChatComponent::BeginPlay()
 	}
 
 	RoomComponent = GetOwner()->FindComponentByClass<URoomComponent>();
+	FileTransferComponent = GetOwner()->FindComponentByClass<UFileTransferComponent>();
 }
 
 
@@ -122,6 +125,14 @@ void UChatComponent::SendEncryptedMessageToServer(const FString& Text)
 }
 
 
+void UChatComponent::ClientReceiveFileInfo_Implementation(const FTransferredFileInfo& FileInfo)
+{
+	UE_LOG(LogChatComponent, Warning, TEXT("Client received file info: %s"), *FileInfo.FileName);
+
+	OnFileInfoReceived.Broadcast(FileInfo);
+}
+
+
 void UChatComponent::ServerSendEncryptedMessage_Implementation(const FString& EncryptedText, const int32 PayloadSize)
 {
 	UE_LOG(LogChatComponent, Display, TEXT("Server received encrypted message"));
@@ -172,6 +183,14 @@ void UChatComponent::ServerChangeUserName_Implementation(const FString& NewName)
 	}
 }
 
+
+void UChatComponent::ServerGetFile_Implementation(const FTransferredFileInfo& FileInfo)
+{
+	if (FileTransferComponent)
+	{
+		FileTransferComponent->ServerGetFile(FileInfo);
+	}
+}
 
 void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool SendEncrypted)
 {

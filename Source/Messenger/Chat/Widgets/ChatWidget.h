@@ -35,6 +35,10 @@ public:
 	UFUNCTION()
 	void OnMessageReceived(const FChatMessage& Message);
 
+
+	UFUNCTION()
+	void OnFileInfoReceived(const FTransferredFileInfo& FileInfo);
+
 	UFUNCTION()
 	void OnJoinRoom(const FString& RoomId, const FUserInfo& User);
 
@@ -49,6 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void ShowNewMessage(const FChatMessage& Message);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
+	void ShowFileInfo(const FTransferredFileInfo& FileInfo);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void OnJoinedRoomsUpdated(const FString& ActiveRoomId, const TArray<FString>& Ids, const TArray<FChatRoomSettings>& Settings);

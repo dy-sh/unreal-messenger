@@ -6,7 +6,7 @@
 #include "Messenger/Chat/Components/ChatComponent.h"
 
 
-TArray<FChatMessage> UChatRoom::GetLastMessages(const int32& Number) const
+TArray<FChatMessage> UChatRoom::GetLastMessages(const int32 Number)
 {
 	TArray<FChatMessage> LastMessages;
 
@@ -22,6 +22,27 @@ TArray<FChatMessage> UChatRoom::GetLastMessages(const int32& Number) const
 	}
 
 	return LastMessages;
+}
+
+
+
+
+TArray<FTransferredFileInfo> UChatRoom::GetLastFileInfos(const int32 Number)
+{
+	TArray<FTransferredFileInfo> LastFiles;
+
+	const int32 FirstFileIndex = FMath::Max(FileInfos.Num() - Number, 0);
+	for (int32 i = FirstFileIndex; i < FileInfos.Num(); ++i)
+	{
+		LastFiles.Add(FileInfos[i]);
+
+		if (LastFiles.Num() >= Number)
+		{
+			break;
+		}
+	}
+
+	return LastFiles;
 }
 
 

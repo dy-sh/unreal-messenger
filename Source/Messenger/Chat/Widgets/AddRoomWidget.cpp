@@ -4,6 +4,7 @@
 #include "AddRoomWidget.h"
 
 #include "Messenger/Chat/Components/ChatComponent.h"
+#include "Messenger/Chat/Components/RoomComponent.h"
 
 
 bool UAddRoomWidget::Initialize()
