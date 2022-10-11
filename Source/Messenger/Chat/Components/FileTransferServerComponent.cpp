@@ -72,6 +72,8 @@ void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
+	// todo send data package for requesting downloading file to client
+	
 	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
 
 	FFileDataPackageInfo ReceivedFile;
