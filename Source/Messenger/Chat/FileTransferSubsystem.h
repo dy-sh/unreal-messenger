@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "ChatTypes.h"
+#include "Protocol/UploadFileRequest.h"
+#include "Protocol/UploadFileResponse.h"
 #include "UObject/Object.h"
 #include "FileTransferSubsystem.generated.h"
 
@@ -42,7 +44,7 @@ public:
 	UFUNCTION(BlueprintPure, Category="FileTransferSubsystem")
 	bool IsServerStarted() const { return ConnectionHandler != nullptr; }
 
-
+	bool SaveReceivedFile(FUploadFileRequestPayload Request);
 protected:
 	int32 ServerPort = 3000;
 

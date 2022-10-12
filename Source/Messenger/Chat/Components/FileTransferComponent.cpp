@@ -8,10 +8,12 @@
 #include "ConnectionTcpClient.h"
 #include "RoomComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "Messenger/Chat/ChatSubsystem.h"
 #include "Messenger/Chat/FileTransferSubsystem.h"
 #include "Messenger/Chat/Protocol/DownloadFileRequest.h"
 #include "Messenger/Chat/Protocol/DownloadFileResponse.h"
 #include "Messenger/Chat/Protocol/UploadFileResponse.h"
+#include "Messenger/Chat/Room/ChatRoom.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 
 
@@ -55,8 +57,6 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 	    || ProceedingFileInfo.State == ETransferringFileState::Downloading)
 		return false;
 
-	// todo: call received file function directly if listen server
-
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	if (!FileManager.FileExists(*FilePath))
 	{
@@ -85,16 +85,24 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 void UFileTransferComponent::ServerRequestUploadingFile_Implementation()
 {
 	ProceedingFileInfo.FileId = FGuid::NewGuid().ToString();
-	
+
 	if (GetOwner()->HasAuthority())
 	{
-		
+		FUploadFileRequestPayload Request;
+		Request.FileId = ProceedingFileInfo.FileId;
+		Request.FileName = ProceedingFileInfo.FileName;
+		Request.RoomId = ProceedingFileRoomId;
+		Request.UserId = ChatComponent->GetUserInfo().UserID;
+		Request.UserName = ChatComponent->GetUserInfo().UserName;
+		Request.FileContent = ProceedingFileContent;
+		const bool bSuccess = FileTransferSubsystem->SaveReceivedFile(Request);
+
 		ProceedingFileInfo.State = ETransferringFileState::Uploaded;
-		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, true);
-	}else
+		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, bSuccess);
+	}
+	else
 	{
 		ProceedingFileInfo.State = ETransferringFileState::Uploading;
-
 		ClientResponseUploadingFile(ProceedingFileInfo.FileId);
 	}
 }
@@ -131,21 +139,39 @@ bool UFileTransferComponent::DownloadFileFromServer(const FString& FileId)
 	    || ProceedingFileInfo.State == ETransferringFileState::Downloading)
 		return false;
 
-	// todo: call received file function directly if listen server
-
-	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
-	if (ServerIpAddress.IsEmpty())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
-		return false;
-	}
-
 	ProceedingFileInfo.FileId = FileId;
 	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
-	ProceedingFileInfo.State = ETransferringFileState::Downloading;
-	ConnectToServer(ServerIpAddress, ServerPort);
 
-	return true;
+	if (GetOwner()->HasAuthority())
+	{
+		const auto* ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>();
+		if (!ChatSubsystem) return false;
+
+		auto* Room = ChatSubsystem->GetRoom(ProceedingFileRoomId);
+		if (!Room) return false;
+
+		FTransferredFileInfo FileInfo;
+		if (!Room->GetFileInfo(FileId, FileInfo)) return false;
+
+		ProceedingFileInfo.FilePath = FileInfo.FilePath;
+		ProceedingFileInfo.FileName = FileInfo.FileName;
+		ProceedingFileInfo.State = ETransferringFileState::Downloaded;
+		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, true);
+	}
+	else
+	{
+		const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
+		if (ServerIpAddress.IsEmpty())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
+			return false;
+		}
+
+		ProceedingFileInfo.State = ETransferringFileState::Downloading;
+		ConnectToServer(ServerIpAddress, ServerPort);
+
+		return true;
+	}
 }
 
 

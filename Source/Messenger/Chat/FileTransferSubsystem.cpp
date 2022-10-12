@@ -90,6 +90,51 @@ EClientServerMessageType UFileTransferSubsystem::ParseMessageType(const TArray<u
 }
 
 
+bool UFileTransferSubsystem::SaveReceivedFile(FUploadFileRequestPayload Request)
+{
+	// save file
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+	FString FilePath = SavedPath + Request.FileName; // todo: escape filename to prevent cheating
+	FilePath = GetNotExistFileName(FilePath);
+
+	if (!FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+		return false;
+	}
+
+	auto* Room = ChatSubsystem->GetRoom(Request.RoomId);
+	if (!Room)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed receive file. Room does not exist."));
+		return false;
+	}
+
+	FTransferredFileInfo FileInfo;
+	FileInfo.FileId = Request.FileId;
+	FileInfo.FileName = Request.FileName;
+	FileInfo.FilePath = FilePath;
+	FileInfo.State = ETransferringFileState::None;
+	Room->AddFileInfo(FileInfo);
+
+	FChatMessage ChatMessage;
+	ChatMessage.Date = FDateTime::Now();
+	ChatMessage.UserName = Request.UserName;
+	ChatMessage.UserId = Request.UserId;
+	ChatMessage.FileId = Request.FileId;
+	ChatMessage.Text = Request.FileName;
+	Room->AddMessage(ChatMessage);
+
+	for (auto* ChatComponent : Room->GetActiveChatComponents())
+	{
+		ChatComponent->ClientReceiveMessage(ChatMessage); // todo: add encryption
+	}
+
+	return true;
+}
+
+
 void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
 	FUploadFileRequestPayload Request = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
@@ -98,13 +143,13 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 	Response.FileId = Request.FileName;
 	Response.bSuccess = false;
 
-	// check server waiting this fileid
+	// check server waiting this file id for preventing cheating (rewrite exist file id)
 	bool bIsServerWaitingThisFile = false;
-	if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
+	if (const auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
 	{
 		TArray<UFileTransferComponent*> FileComps = Room->GetActiveFileTransferComponentsOfUser(Request.UserId);
 
-		bool bFound = FileComps.ContainsByPredicate([&](const UFileTransferComponent* Comp)
+		const bool bFound = FileComps.ContainsByPredicate([&](const UFileTransferComponent* Comp)
 		{
 			return Comp &&
 			       Comp->GetState() == ETransferringFileState::Uploading &&
@@ -116,47 +161,7 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 
 	if (bIsServerWaitingThisFile)
 	{
-		// save file
-		IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-		const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-		FString FilePath = SavedPath + Request.FileName; // todo: escape filename to prevent cheating
-		FilePath = GetNotExistFileName(FilePath);
-
-		if (FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
-		{
-			Response.bSuccess = true;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
-		}
-
-		if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
-		{
-			FTransferredFileInfo FileInfo;
-			FileInfo.FileId = Request.FileId;
-			FileInfo.FileName = Request.FileName;
-			FileInfo.FilePath = FilePath;
-			FileInfo.State = ETransferringFileState::None;
-			Room->AddFileInfo(FileInfo);
-
-			FChatMessage ChatMessage;
-			ChatMessage.Date = FDateTime::Now();
-			ChatMessage.UserName = Request.UserName;
-			ChatMessage.UserId = Request.UserId;
-			ChatMessage.FileId = Request.FileId;
-			ChatMessage.Text = Request.FileName;
-			Room->AddMessage(ChatMessage);
-
-			for (auto* ChatComponent : Room->GetActiveChatComponents())
-			{
-				ChatComponent->ClientReceiveMessage(ChatMessage); // todo: add encryption
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed receive file. Room does not exist."));
-		}
+		Response.bSuccess = SaveReceivedFile(Request);
 	}
 	else
 	{
@@ -173,7 +178,7 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 	FDownloadFileRequestPayload Request = UDownloadFileRequest::ParseDownloadFileRequestPayload(ByteArray);
 
 	FDownloadFileResponsePayload Response;
-	Response.FileId = Request.FileId;	
+	Response.FileId = Request.FileId;
 	Response.bSuccess = false;
 
 	if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
@@ -183,12 +188,12 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 		{
 			Response.FileId = FileInfo.FileId;
 			Response.FileName = FileInfo.FileName;
-			
+
 			IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 			if (FileManager.FileExists(*FileInfo.FilePath))
 			{
 				if (FFileHelper::LoadFileToArray(Response.FileContent, *FileInfo.FilePath))
-				{					
+				{
 					Response.bSuccess = true;
 				}
 				else
