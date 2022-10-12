@@ -48,6 +48,7 @@ bool UChatWidget::Initialize()
 			if (auto* Comp = PlayerController->FindComponentByClass<UFileTransferComponent>())
 			{
 				FileTransferComponent = Comp;
+				FileTransferComponent->OnStartUploadingFile.AddDynamic(this, &ThisClass::OnStartUploadingFile);
 			}
 
 			FInputModeUIOnly InputModeData;
@@ -140,14 +141,12 @@ void UChatWidget::SendEncryptedMessage(const FString& Text)
 }
 
 
-bool UChatWidget::SendFile(const FString& FileName)
+void UChatWidget::SendFile(const FString& FileName)
 {
 	if (FileTransferComponent && RoomComponent)
 	{		
-		return FileTransferComponent->SendFileToServer(RoomComponent->GetActiveRoomId(), FileName);
+		FileTransferComponent->SendFileToServer(RoomComponent->GetActiveRoomId(), FileName);
 	}
-
-	return false;
 }
 
 

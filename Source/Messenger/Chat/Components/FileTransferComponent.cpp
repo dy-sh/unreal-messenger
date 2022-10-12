@@ -81,7 +81,40 @@ void UFileTransferComponent::CloseConnection()
 }
 
 
-bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
+void UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
+{
+	UploadingFileRoomId = RoomId;
+	UploadingFilePath = FilePath;
+	ServerRequestUploadingFile();
+}
+
+
+void UFileTransferComponent::ServerRequestUploadingFile_Implementation()
+{
+	UploadingFileId = FGuid::NewGuid().ToString();
+	ClientResponseUploadingFile(UploadingFileId);
+}
+
+
+void UFileTransferComponent::ClientResponseUploadingFile_Implementation(const FString& FileId)
+{
+	if (!ChatComponent) return;
+	
+	UploadingFileId = FileId;
+	
+	FTransferredFileInfo FileInfo;
+	FileInfo.Date=FDateTime::Now();
+	FileInfo.FileId=FileId;
+	FileInfo.UserId = ChatComponent->GetUserInfo().UserID;
+	FileInfo.UserName = ChatComponent->GetUserInfo().UserName;
+	FileInfo.SavedFileName=UploadingFilePath;
+	FileInfo.FileName=FPaths::GetBaseFilename(UploadingFilePath) + "." + FPaths::GetExtension(UploadingFilePath);
+	OnStartUploadingFile.Broadcast(FileInfo);
+	SendFileToServer(UploadingFileRoomId, UploadingFileId, UploadingFilePath);
+}
+
+
+bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FileId, const FString& FilePath)
 {
 	if (!ChatComponent) return false;
 	if (!OnlineSessionsSubsystem) return false;

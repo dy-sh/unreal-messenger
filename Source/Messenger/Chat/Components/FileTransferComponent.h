@@ -16,7 +16,6 @@ class UOnlineSessionsSubsystem;
 class UChatComponent;
 
 
-
 UENUM(BlueprintType)
 enum class EFileTransferringState:uint8
 {
@@ -24,6 +23,10 @@ enum class EFileTransferringState:uint8
 	SendingFile,
 	DownloadingFile,
 };
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartUploadingFile, const FTransferredFileInfo&, FileInfo);
+
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class MESSENGER_API UFileTransferComponent : public UActorComponent
@@ -37,8 +40,16 @@ public:
 
 	UFileTransferComponent();
 
+	FOnStartUploadingFile OnStartUploadingFile;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestUploadingFile();
+
+	UFUNCTION(Client, Reliable)
+	void ClientResponseUploadingFile(const FString& FileId);
+
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	bool SendFileToServer(const FString& RoomId, const FString& FilePath);
+	void SendFileToServer(const FString& RoomId, const FString& FilePath);
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
 	bool DownloadFileFromServer(const FTransferredFileInfo& FileInfo);
@@ -64,8 +75,14 @@ protected:
 
 	EFileTransferringState State;
 
+	FString UploadingFileId;
+	FString UploadingFilePath;
+	FString UploadingFileRoomId;
+
 
 	virtual void BeginPlay() override;
+
+	bool SendFileToServer(const FString& RoomId, const FString& FileId, const FString& FilePath);
 
 	bool ConnectToServer(const FString& IpAddress, const int32 Port);
 	void CloseConnection();
@@ -78,8 +95,7 @@ protected:
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
 
 	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
-	
+
 	void ReceiveDownloadFileResponse(const TArray<uint8> ByteArray);
 	FString GetNotExistFileName(const FString& FilePath) const;
 };
-

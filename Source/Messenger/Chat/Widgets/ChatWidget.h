@@ -20,6 +20,7 @@ class MESSENGER_API UChatWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UFUNCTION()
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category="Chat")
@@ -49,7 +50,7 @@ public:
 	void SendEncryptedMessage(const FString& Text);
 
 	UFUNCTION(BlueprintCallable, Category="Chat")
-	bool SendFile(const FString& FileName);
+	void SendFile(const FString& FileName);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void ShowNewMessage(const FChatMessage& Message);
@@ -65,6 +66,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void OnExitRoom(const FString& RoomId);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintImplementableEvent, Category="Chat")
+	void OnStartUploadingFile(const FTransferredFileInfo& FileInfo);
+
 
 	UPROPERTY()
 	UChatComponent* ChatComponent;
