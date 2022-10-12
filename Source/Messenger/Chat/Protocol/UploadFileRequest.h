@@ -8,7 +8,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FFileDataPackageInfo
+struct FUploadFileRequestPayload
 {
 	GENERATED_BODY()
 
@@ -32,21 +32,20 @@ class MESSENGER_API UUploadFileRequest : public UClientServerMessage
 
 public:
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	static UUploadFileRequest* CreateUploadFileRequest(const int32 MessageId, const FFileDataPackageInfo& FileInfo);
+	static UUploadFileRequest* CreateUploadFileRequest(const int32 MessageId, const FUploadFileRequestPayload& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	static const FFileDataPackageInfo& ParseByteArrayToFileRequestPayload(const TArray<uint8>& ByteArray);
+	static const FUploadFileRequestPayload& ParseUploadFileRequestPayload(const TArray<uint8>& ByteArray);
 	
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	void InitializeByPayload(const int32 MessageId, const FFileDataPackageInfo& FileInfo);
+	void InitializeByPayload(const int32 MessageId, const FUploadFileRequestPayload& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	void InitializeByByteArray(const TArray<uint8>& ByteArray);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	virtual const FFileDataPackageInfo& GetPayload() const { return PayloadData; }
-
+	const FUploadFileRequestPayload& GetPayload() const { return PayloadData; }
 
 protected:
-	FFileDataPackageInfo PayloadData;
+	FUploadFileRequestPayload PayloadData;
 };

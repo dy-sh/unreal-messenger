@@ -81,7 +81,7 @@ void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, c
 
 void UFileTransferServerComponent::ReceiveUploadedFile(const TArray<uint8>& ByteArray)
 {
-	FFileDataPackageInfo ReceivedFile = UUploadFileRequest::ParseByteArrayToFileRequestPayload(ByteArray);
+	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());

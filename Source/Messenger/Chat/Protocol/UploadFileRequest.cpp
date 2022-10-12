@@ -5,7 +5,7 @@
 #include "NetworkUtils.h"
 
 
-UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const int32 MessageId, const FFileDataPackageInfo& FileInfo)
+UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const int32 MessageId, const FUploadFileRequestPayload& FileInfo)
 {
 	auto* Obj = NewObject<UUploadFileRequest>();
 	Obj->InitializeByPayload(MessageId, FileInfo);
@@ -13,7 +13,7 @@ UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const int32 Mess
 }
 
 
-const FFileDataPackageInfo& UUploadFileRequest::ParseByteArrayToFileRequestPayload(const TArray<uint8>& ByteArray)
+const FUploadFileRequestPayload& UUploadFileRequest::ParseUploadFileRequestPayload(const TArray<uint8>& ByteArray)
 {
 	auto* Obj = NewObject<UUploadFileRequest>();
 	Obj->InitializeByByteArray(ByteArray);
@@ -21,7 +21,7 @@ const FFileDataPackageInfo& UUploadFileRequest::ParseByteArrayToFileRequestPaylo
 }
 
 
-void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FFileDataPackageInfo& FileInfo)
+void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FUploadFileRequestPayload& FileInfo)
 {
 	MessId = MessageId;
 	PayloadData = FileInfo;

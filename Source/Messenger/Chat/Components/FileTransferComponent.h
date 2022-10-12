@@ -61,7 +61,7 @@ protected:
 	UPROPERTY()
 	UChatComponent* ChatComponent;
 
-	FFileDataPackageInfo FileToSend;
+	FUploadFileRequestPayload FileToSend;
 	FTransferredFileInfo FileToDownload;
 
 	EFileTransferringState State;
