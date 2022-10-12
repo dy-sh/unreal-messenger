@@ -57,7 +57,6 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 	// todo: call received file function directly if listen server
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-
 	if (!FileManager.FileExists(*FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FilePath);
@@ -114,6 +113,7 @@ void UFileTransferComponent::ClientResponseUploadingFile_Implementation(const FS
 bool UFileTransferComponent::DownloadFileFromServer(const FString& FileId)
 {
 	if (!OnlineSessionsSubsystem) return false;
+	if (FileId.IsEmpty()) return false;
 	if (ProceedingFileInfo.State == ETransferringFileState::Uploading
 	    || ProceedingFileInfo.State == ETransferringFileState::Downloading)
 		return false;
@@ -289,6 +289,7 @@ void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8>& By
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
 	ProceedingFileInfo.FilePath = SavedPath + Response.FileName;
 	ProceedingFileInfo.FilePath = GetNotExistFileName(ProceedingFileInfo.FilePath);
+	ProceedingFileInfo.FileName = Response.FileName;
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *ProceedingFileInfo.FilePath))

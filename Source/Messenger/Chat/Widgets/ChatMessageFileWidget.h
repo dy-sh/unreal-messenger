@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "ChatMessageWidget.h"
 #include "Messenger/Chat/ChatTypes.h"
-#include "FileInfoWidget.generated.h"
+#include "ChatMessageFileWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MESSENGER_API UFileInfoWidget : public UChatMessageWidget
+class MESSENGER_API UChatMessageFileWidget : public UChatMessageWidget
 {
 	GENERATED_BODY()
 	

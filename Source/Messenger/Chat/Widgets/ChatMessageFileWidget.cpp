@@ -1,11 +1,11 @@
 ﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 
-#include "FileInfoWidget.h"
+#include "ChatMessageFileWidget.h"
 #include "Messenger/Chat/Components/FileTransferComponent.h"
 
 
-void UFileInfoWidget::DownloadFileFromServer()
+void UChatMessageFileWidget::DownloadFileFromServer()
 {
 	if (!GetWorld()) return;
 	if (FileInfo.State != ETransferringFileState::None && FileInfo.State != ETransferringFileState::Uploaded) return;
@@ -20,7 +20,7 @@ void UFileInfoWidget::DownloadFileFromServer()
 }
 
 
-void UFileInfoWidget::SaveDownloadedFile(FString Path)
+void UChatMessageFileWidget::SaveDownloadedFile(FString Path)
 {
 	if (!GetWorld()) return;
 	if (FileInfo.State != ETransferringFileState::Downloaded) return;
