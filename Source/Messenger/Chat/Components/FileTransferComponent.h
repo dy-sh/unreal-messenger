@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "Messenger/Chat/ChatTypes.h"
 #include "Messenger/Chat/Protocol/UploadFileRequest.h"
+#include "Messenger/Chat/Widgets/FileInfoWidget.h"
 #include "FileTransferComponent.generated.h"
 
 class UConnectionBase;
@@ -61,7 +62,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
 	FTransferredFileInfo GetProceedingFileInfo() const { return ProceedingFileInfo; }
-	
+
+	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
+	bool SaveDownloadedFile(const FTransferredFileInfo& FileInfo, const FString& Path);
+
 protected:
 	UPROPERTY()
 	UConnectionHandler* ConnectionHandler;

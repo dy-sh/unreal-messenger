@@ -24,4 +24,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="FileInfo")
 	void DownloadFileFromServer();
+
+	UFUNCTION(BlueprintCallable, Category="FileInfo")
+	void SaveDownloadedFile(FString Path);
 };

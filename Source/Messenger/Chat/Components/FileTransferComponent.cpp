@@ -140,6 +140,31 @@ bool UFileTransferComponent::DownloadFileFromServer(const FTransferredFileInfo& 
 }
 
 
+bool UFileTransferComponent::SaveDownloadedFile(const FTransferredFileInfo& FileInfo, const FString& Path)
+{
+	if (FileInfo.State != ETransferringFileState::Downloaded)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Faild to save file. File is not downloaded."));
+		return false;
+	}
+
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+	if (!FileManager.FileExists(*FileInfo.FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Faild to save file. File downloaded but not exist."));
+		return false;
+	}
+
+	if (FileManager.FileExists(*Path))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Faild to save file. File already exist."));
+		return false;
+	}
+
+	return FileManager.CopyFile(*Path, *FileInfo.FilePath);
+}
+
+
 void UFileTransferComponent::ConnectToServer(const FString& IpAddress, const int32 Port)
 {
 	if (ConnectionHandler)
@@ -235,7 +260,7 @@ void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const T
 			break;
 		default: break;
 	}
-	
+
 	CloseConnection();
 }
 
@@ -264,15 +289,17 @@ void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8>& By
 	const FDownloadFileResponsePayload Response = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
 
 	// save file
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + Response.FileName;
-	FilePath = GetNotExistFileName(FilePath);
+	ProceedingFileInfo.FilePath = SavedPath + Response.FileName;
+	ProceedingFileInfo.FilePath = GetNotExistFileName(ProceedingFileInfo.FilePath);
 
-	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *FilePath))
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *ProceedingFileInfo.FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
-		return; 
+		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *ProceedingFileInfo.FilePath);
+
+		ProceedingFileInfo.State = ETransferringFileState::None;
+		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, false);
 	}
 
 	ProceedingFileInfo.State = ETransferringFileState::Downloaded;
