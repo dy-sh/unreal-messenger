@@ -19,6 +19,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn=true), Category="FileInfo")
 	FTransferredFileInfo FileInfo;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn=true), Category="FileInfo")
+	bool bSuccess;
+	
 	UFUNCTION(BlueprintCallable)
 	void ReceiveFile();
 };

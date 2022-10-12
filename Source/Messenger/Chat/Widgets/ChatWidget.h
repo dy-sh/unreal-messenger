@@ -20,7 +20,6 @@ class MESSENGER_API UChatWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION()
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category="Chat")
@@ -56,7 +55,7 @@ public:
 	void ShowNewMessage(const FChatMessage& Message);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
-	void ShowFileInfo(const FTransferredFileInfo& FileInfo);
+	void ShowFileInfo(const FTransferredFileInfo& FileInfo, bool bSuccess);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void OnJoinedRoomsUpdated(const FString& ActiveRoomId, const TArray<FString>& Ids, const TArray<FChatRoomSettings>& Settings);
@@ -67,9 +66,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Chat")
 	void OnExitRoom(const FString& RoomId);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintImplementableEvent, Category="Chat")
-	void OnStartUploadingFile(const FTransferredFileInfo& FileInfo);
+	UFUNCTION(BlueprintImplementableEvent, Category="Chat")
+	void OnUploadingFileStarted(const FTransferredFileInfo& FileInfo);
 
+	UFUNCTION(BlueprintImplementableEvent, Category="Chat")
+	void OnUploadingFileComplete(const FTransferredFileInfo& FileInfo, bool bSuccess);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category="Chat")
+	void OnDownloadingFileStarted(const FTransferredFileInfo& FileInfo);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category="Chat")
+	void OnDownloadingFileComplete(const FTransferredFileInfo& FileInfo, bool bSuccess);
 
 	UPROPERTY()
 	UChatComponent* ChatComponent;

@@ -20,11 +20,11 @@ class UChatComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUploadingFileStarted, const FTransferredFileInfo&, FileInfo);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUploadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSucces);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUploadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSuccess);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDownloadingFileStarted, const FTransferredFileInfo&, FileInfo);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDownloadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSucces);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDownloadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSuccess);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))

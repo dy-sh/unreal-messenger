@@ -62,7 +62,7 @@ void UClientServerMessage::ReadPayloadFromDataByteArray(const int32 DataSizeBitD
 void UClientServerMessage::WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const bool Payload,
 	TArray<uint8>& Data, int32& Offset)
 {
-	Data[Offset] = Payload;
+	Data[Offset] = (bool)Payload;
 	Offset += DataSizeBitDepth;
 }
 
@@ -70,6 +70,6 @@ void UClientServerMessage::WritePayloadToDataByteArray(const int32 DataSizeBitDe
 void UClientServerMessage::ReadPayloadFromDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Data,
 	bool& Payload, int32& Offset)
 {
-	Payload = Data[Offset];
+	Payload = (bool)Data[Offset];
 	Offset += DataSizeBitDepth;
 }

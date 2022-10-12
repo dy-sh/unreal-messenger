@@ -75,6 +75,8 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
 
 	ServerRequestUploadingFile();
+	
+	return true;
 }
 
 
@@ -94,7 +96,7 @@ void UFileTransferComponent::ClientResponseUploadingFile_Implementation(const FS
 
 	ProceedingFileInfo.FileId = FileId;
 	ProceedingFileInfo.State = ETransferringFileState::Uploading;
-	OnStartUploadingFile.Broadcast(ProceedingFileInfo);
+	OnUploadingFileStarted.Broadcast(ProceedingFileInfo);
 
 	// todo: call received file function directly if listen server
 	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();

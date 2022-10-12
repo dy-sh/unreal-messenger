@@ -48,7 +48,10 @@ bool UChatWidget::Initialize()
 			if (auto* Comp = PlayerController->FindComponentByClass<UFileTransferComponent>())
 			{
 				FileTransferComponent = Comp;
-				FileTransferComponent->OnStartUploadingFile.AddDynamic(this, &ThisClass::OnStartUploadingFile);
+				FileTransferComponent->OnUploadingFileStarted.AddDynamic(this, &ThisClass::OnUploadingFileStarted);
+				FileTransferComponent->OnUploadingFileComplete.AddDynamic(this, &ThisClass::OnUploadingFileComplete);
+				FileTransferComponent->OnDownloadingFileStarted.AddDynamic(this, &ThisClass::OnDownloadingFileStarted);
+				FileTransferComponent->OnDownloadingFileComplete.AddDynamic(this, &ThisClass::OnDownloadingFileComplete);
 			}
 
 			FInputModeUIOnly InputModeData;
@@ -110,7 +113,7 @@ void UChatWidget::OnMessageReceived(const FChatMessage& Message)
 
 void UChatWidget::OnFileInfoReceived(const FTransferredFileInfo& FileInfo)
 {
-	ShowFileInfo(FileInfo);
+	ShowFileInfo(FileInfo, true);
 }
 
 
