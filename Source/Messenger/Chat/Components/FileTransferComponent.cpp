@@ -6,6 +6,7 @@
 #include "ChatComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpClient.h"
+#include "RoomComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Chat/FileTransferSubsystem.h"
 #include "Messenger/Chat/Protocol/DownloadFileRequest.h"
@@ -48,6 +49,7 @@ void UFileTransferComponent::BeginPlay()
 bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
 {
 	if (!ChatComponent) return false;
+	if (!ChatComponent->GetRoomComponent()) return false;
 	if (ProceedingFileInfo.State == ETransferringFileState::Uploading
 	    || ProceedingFileInfo.State == ETransferringFileState::Downloading)
 		return false;
@@ -69,6 +71,7 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 	}
 
 	ProceedingFileInfo.Date = FDateTime::Now();
+	ProceedingFileInfo.RoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.UserId = ChatComponent->GetUserInfo().UserID;
 	ProceedingFileInfo.UserName = ChatComponent->GetUserInfo().UserName;
 	ProceedingFileInfo.FilePath = FilePath;
@@ -180,7 +183,9 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 	{
 		FUploadFileRequestPayload Payload;
 		Payload.RoomId = ProceedingFileInfo.RoomId;
+		Payload.FileId = ProceedingFileInfo.FileId;
 		Payload.UserId = ProceedingFileInfo.UserId;
+		Payload.UserName = ProceedingFileInfo.UserName;
 		Payload.FileName = ProceedingFileInfo.FileName;
 		Payload.FileContent = ProceedingFileContent;
 
@@ -190,8 +195,8 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 	else if (ProceedingFileInfo.State == ETransferringFileState::Downloading)
 	{
 		FDownloadFileRequestPayload Payload;
-		Payload.FileId = ProceedingFileInfo.FileId;
 		Payload.RoomId = ProceedingFileInfo.RoomId;
+		Payload.FileId = ProceedingFileInfo.FileId;
 		Payload.UserId = ChatComponent->GetUserInfo().UserID;
 
 		const auto* Message = UDownloadFileRequest::CreateDownloadFileRequest(Payload);
@@ -245,7 +250,7 @@ EClientServerMessageType UFileTransferComponent::ParseMessageType(const TArray<u
 }
 
 
-void UFileTransferComponent::ReceiveUploadFileResponse(const TArray<uint8> ByteArray)
+void UFileTransferComponent::ReceiveUploadFileResponse(const TArray<uint8>& ByteArray)
 {
 	const FUploadFileResponsePayload Response = UUploadFileResponse::ParseUploadFileResponsePayload(ByteArray);
 
@@ -254,7 +259,7 @@ void UFileTransferComponent::ReceiveUploadFileResponse(const TArray<uint8> ByteA
 }
 
 
-void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> ByteArray)
+void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8>& ByteArray)
 {
 	const FDownloadFileResponsePayload Response = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
 
@@ -267,7 +272,7 @@ void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> Byt
 	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
-		return; // todo: send bad request
+		return; 
 	}
 
 	ProceedingFileInfo.State = ETransferringFileState::Downloaded;

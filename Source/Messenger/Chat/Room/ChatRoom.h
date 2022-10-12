@@ -7,6 +7,7 @@
 #include "ChatRoom.generated.h"
 
 class UChatComponent;
+class UFileTransferComponent;
 
 UCLASS()
 class MESSENGER_API UChatRoom : public UObject
@@ -40,6 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddFileInfo(const FTransferredFileInfo& FileInfo) { FileInfos.Add(FileInfo); }
 
+
 	UFUNCTION(BlueprintCallable)
 	TArray<FTransferredFileInfo> GetLastFileInfos(const int32 Number);
 
@@ -69,9 +71,11 @@ public:
 	TArray<UChatComponent*> GetActiveChatComponents() const { return ActiveChatComponents; }
 
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	TArray<UChatComponent*> GetActiveChatComponentsOfUser(FString UserId) const;
 
+	UFUNCTION(BlueprintPure)
+	TArray<UFileTransferComponent*> GetActiveFileTransferComponentsOfUser(FString UserId) const;
 
 private:
 	FString RoomId;

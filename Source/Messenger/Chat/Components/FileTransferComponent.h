@@ -59,7 +59,9 @@ public:
 	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
 	ETransferringFileState GetState() const { return ProceedingFileInfo.State; }
 
-
+	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
+	FTransferredFileInfo GetProceedingFileInfo() const { return ProceedingFileInfo; }
+	
 protected:
 	UPROPERTY()
 	UConnectionHandler* ConnectionHandler;
@@ -90,7 +92,7 @@ protected:
 
 	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
 
-	void ReceiveDownloadFileResponse(const TArray<uint8> ByteArray);
-	void ReceiveUploadFileResponse(const TArray<uint8> ByteArray);
+	void ReceiveDownloadFileResponse(const TArray<uint8>& ByteArray);
+	void ReceiveUploadFileResponse(const TArray<uint8>& ByteArray);
 	FString GetNotExistFileName(const FString& FilePath) const;
 };

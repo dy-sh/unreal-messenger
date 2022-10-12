@@ -22,6 +22,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn=true), Category="FileInfo")
 	bool bSuccess;
 	
-	UFUNCTION(BlueprintCallable)
-	void ReceiveFile();
+	UFUNCTION(BlueprintCallable, Category="FileInfo")
+	void DownloadFileFromServer();
 };

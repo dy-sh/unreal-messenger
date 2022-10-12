@@ -30,6 +30,7 @@ void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& Fi
 	const int32 Length =
 		CalculatePayloadSize(GetMessageType())+
 		CalculatePayloadSize(FileInfo.RoomId) +
+		CalculatePayloadSize(FileInfo.FileId) +
 		CalculatePayloadSize(FileInfo.UserId) +
 		CalculatePayloadSize(FileInfo.UserName) +
 		CalculatePayloadSize(FileInfo.FileName) +
@@ -40,6 +41,7 @@ void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& Fi
 	int32 Offset = 0;
 	WritePayload(GetMessageType(), DataByteArray, Offset);
 	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
+	WritePayload(FileInfo.FileId, DataByteArray, Offset);
 	WritePayload(FileInfo.UserId, DataByteArray, Offset);
 	WritePayload(FileInfo.UserName, DataByteArray, Offset);
 	WritePayload(FileInfo.FileName, DataByteArray, Offset);
@@ -55,6 +57,7 @@ void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 	ReadPayload(ByteArray, MessageType, Offset);
 	checkf(MessageType==GetMessageType(), TEXT("Failed to deserialize message. Wrong message type!"));
 	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
+	ReadPayload(ByteArray, PayloadData.FileId, Offset);
 	ReadPayload(ByteArray, PayloadData.UserId, Offset);
 	ReadPayload(ByteArray, PayloadData.UserName, Offset);
 	ReadPayload(ByteArray, PayloadData.FileName, Offset);

@@ -7,6 +7,7 @@
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
 #include "Components/ChatComponent.h"
+#include "Components/FileTransferComponent.h"
 #include "Protocol/ClientServerMessage.h"
 #include "Protocol/DownloadFileRequest.h"
 #include "Protocol/DownloadFileResponse.h"
@@ -97,34 +98,58 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 	Response.FileId = Request.FileName;
 	Response.bSuccess = false;
 
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + Request.FileName;
-	FilePath = GetNotExistFileName(FilePath);
+	// check server waiting this fileid
+	bool bIsServerWaitingThisFile = false;
+	if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
+	{
+		TArray<UFileTransferComponent*> FileComps = Room->GetActiveFileTransferComponentsOfUser(Request.UserId);
 
-	if (FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
-	{
-		Response.bSuccess = true;
+		bool bFound = FileComps.ContainsByPredicate([&](const UFileTransferComponent* Comp)
+		{
+			return Comp &&
+			       Comp->GetState() == ETransferringFileState::Uploading &&
+			       Comp->GetProceedingFileInfo().FileId == Request.FileId;
+		});
+
+		bIsServerWaitingThisFile = bFound;
 	}
-	else
+
+	if (bIsServerWaitingThisFile)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+		// save file
+		IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+		const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+		FString FilePath = SavedPath + Request.FileName;
+		FilePath = GetNotExistFileName(FilePath);
+
+		if (FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
+		{
+			Response.bSuccess = true;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+		}
+
+		// send message to all users
+		FTransferredFileInfo FileInfo;
+		FileInfo.RoomId = Request.RoomId;
+		FileInfo.UserId = Request.UserId;
+		FileInfo.UserName = Request.UserName;
+		FileInfo.FileId = Request.FileId;
+		FileInfo.FileName = Request.FileName;
+		FileInfo.FilePath = FilePath;
+		FileInfo.Date = FDateTime::Now();
+		FileInfo.State = ETransferringFileState::None;
+
+		SendFileInfoToAllUsersInRoom(FileInfo, false);
+	}else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Received a file that the server does not expect from this user."));
 	}
 
 	const auto* Message = UUploadFileResponse::CreateUploadFileResponse(Response);
 	Connection->Send(Message->GetByteArray());
-
-	FTransferredFileInfo FileInfo;
-	FileInfo.RoomId = Request.RoomId;
-	FileInfo.UserId = Request.UserId;
-	FileInfo.UserName = Request.UserName;
-	FileInfo.FileId = FGuid::NewGuid().ToString();
-	FileInfo.FileName = Request.FileName;
-	FileInfo.FilePath = FilePath;
-	FileInfo.Date = FDateTime::Now();
-	FileInfo.State = ETransferringFileState::None;
-
-	SendFileInfoToAllUsersInRoom(FileInfo, false);
 }
 
 

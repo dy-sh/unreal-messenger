@@ -5,7 +5,7 @@
 #include "Messenger/Chat/Components/FileTransferComponent.h"
 
 
-void UFileInfoWidget::ReceiveFile()
+void UFileInfoWidget::DownloadFileFromServer()
 {
 	if (!GetWorld()) return;
 

@@ -94,3 +94,20 @@ TArray<UChatComponent*> UChatRoom::GetActiveChatComponentsOfUser(FString UserId)
 	}
 	return Components;
 }
+
+
+TArray<UFileTransferComponent*> UChatRoom::GetActiveFileTransferComponentsOfUser(FString UserId) const
+{
+	TArray<UFileTransferComponent*> Components;
+	for (const auto* ChatComp : ActiveChatComponents)
+	{
+		if (ChatComp->GetUserInfo().UserID == UserId)
+		{
+			if (auto* FileComp = ChatComp->GetFileTransferComponent())
+			{
+				Components.Add(FileComp);
+			}
+		}
+	}
+	return Components;
+}

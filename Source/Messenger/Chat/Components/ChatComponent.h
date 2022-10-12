@@ -93,6 +93,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UAuthorizationComponent* GetAuthorizationComponent() const { return AuthorizationComponent; }
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UFileTransferComponent* GetFileTransferComponent() const { return FileTransferComponent; }
+
 private:
 	UPROPERTY()
 	UAuthorizationComponent* AuthorizationComponent;
