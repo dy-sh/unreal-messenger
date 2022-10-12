@@ -42,9 +42,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
 	bool DownloadFileFromServer(const FTransferredFileInfo& FileInfo);
 
-	UFUNCTION(Server, Reliable)
-	void ServerGetFile(const FTransferredFileInfo& FileInfo);
-
 	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
 	EFileTransferringState GetState() const { return State; }
 

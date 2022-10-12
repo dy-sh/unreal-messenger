@@ -36,13 +36,13 @@ class MESSENGER_API UDownloadFileResponse : public UClientServerMessage
 
 public:
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	static UDownloadFileResponse* CreateDownloadFileResponse(const int32 MessageId, const FDownloadFileResponsePayload& FileInfo);
+	static UDownloadFileResponse* CreateDownloadFileResponse(const FDownloadFileResponsePayload& Payload);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	static const FDownloadFileResponsePayload& ParseDownloadFileResponsePayload(const TArray<uint8>& ByteArray);
 	
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	void InitializeByPayload(const int32 MessageId, const FDownloadFileResponsePayload& FileInfo);
+	void InitializeByPayload(const FDownloadFileResponsePayload& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	void InitializeByByteArray(const TArray<uint8>& ByteArray);

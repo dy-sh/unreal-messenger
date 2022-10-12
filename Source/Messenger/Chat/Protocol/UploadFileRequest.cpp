@@ -3,12 +3,13 @@
 
 #include "UploadFileRequest.h"
 #include "NetworkUtils.h"
+#include "Messenger/Chat/ChatTypes.h"
 
 
-UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const int32 MessageId, const FUploadFileRequestPayload& FileInfo)
+UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const FUploadFileRequestPayload& Payload)
 {
 	auto* Obj = NewObject<UUploadFileRequest>();
-	Obj->InitializeByPayload(MessageId, FileInfo);
+	Obj->InitializeByPayload(Payload);
 	return Obj;
 }
 
@@ -21,9 +22,9 @@ const FUploadFileRequestPayload& UUploadFileRequest::ParseUploadFileRequestPaylo
 }
 
 
-void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FUploadFileRequestPayload& FileInfo)
+void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& FileInfo)
 {
-	MessId = MessageId;
+	MessType = (int32)EClientServerMessageType::UploadFileRequest;
 	PayloadData = FileInfo;
 
 	TArray<uint8> RoomIdByteArray;
@@ -36,7 +37,7 @@ void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FUploa
 	UNetworkUtils::StringToByteArray(FileInfo.FileName, FileNameByteArray);
 
 	const int32 Length =
-		DATA_SIZE_BIT_DEPTH + //MessageId
+		DATA_SIZE_BIT_DEPTH + //MessageType
 		DATA_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
 		DATA_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
 		DATA_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
@@ -45,7 +46,7 @@ void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FUploa
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessageId, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessType, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, RoomIdByteArray, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, UserIdByteArray, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileNameByteArray, DataByteArray, Offset);
@@ -55,13 +56,13 @@ void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FUploa
 
 void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 {
-	int32 MessageId;
+	int32 MessageType;
 	TArray<uint8> RoomIdByteArray;
 	TArray<uint8> UserIdByteArray;
 	TArray<uint8> FileNameByteArray;
 
 	int32 Offset = 0;
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageId, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, RoomIdByteArray, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, UserIdByteArray, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, FileNameByteArray, Offset);

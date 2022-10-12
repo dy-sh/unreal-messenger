@@ -8,6 +8,7 @@
 #include "ConnectionTcpClient.h"
 #include "FileTransferServerComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "Messenger/Chat/Protocol/DownloadFileRequest.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 
 
@@ -77,6 +78,7 @@ void UFileTransferComponent::CloseConnection()
 
 bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
 {
+	if (!ChatComponent) return false;
 	if (!OnlineSessionsSubsystem) return false;
 	if (State != EFileTransferringState::None) return false;
 
@@ -136,6 +138,8 @@ bool UFileTransferComponent::DownloadFileFromServer(const FTransferredFileInfo& 
 
 void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 {
+	if (!ChatComponent) return;
+
 	if (State == EFileTransferringState::SendingFile)
 	{
 		// if (FileToSend.FileContent.Num() == 0)
@@ -144,14 +148,19 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 		// 	return;
 		// }
 
-		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(1, FileToSend);
+		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(FileToSend);
 		ConnectionHandler->Send(Message->GetByteArray());
 		// FileToSend = FFileDataPackageInfo{};
 		// CloseConnection();
 	}
 	else if (State == EFileTransferringState::DownloadingFile)
 	{
-		ServerGetFile(FileToDownload);
+		FDownloadFileRequestPayload Payload;
+		Payload.FileId = FileToDownload.FileId;
+		Payload.RoomId = FileToDownload.RoomId;
+		Payload.UserId = ChatComponent->GetUserInfo().UserID;
+		const auto* Message = UDownloadFileRequest::CreateDownloadFileRequest(Payload);
+		ConnectionHandler->Send(Message->GetByteArray());
 	}
 	else
 	{

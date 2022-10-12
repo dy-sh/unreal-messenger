@@ -17,10 +17,10 @@ public:
 	const TArray<uint8>& GetByteArray() const { return DataByteArray; }
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	int32 GetMessageId() const { return MessId; }
+	int32 GetMessageType() const { return MessType; }
 
 protected:
-	int32 MessId{0};
+	int32 MessType{0};
 	TArray<uint8> DataByteArray;
 
 	void WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Payload, TArray<uint8>& Data,

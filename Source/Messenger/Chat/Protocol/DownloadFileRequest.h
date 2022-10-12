@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ClientServerMessage.h"
-#include "UObject/Object.h"
 #include "DownloadFileRequest.generated.h"
 
 
@@ -30,13 +29,13 @@ class MESSENGER_API UDownloadFileRequest : public UClientServerMessage
 
 public:
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	static UDownloadFileRequest* CreateDownloadFileRequest(const int32 MessageId, const FDownloadFileRequestPayload& FileInfo);
+	static UDownloadFileRequest* CreateDownloadFileRequest(const FDownloadFileRequestPayload& Payload);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	static const FDownloadFileRequestPayload& ParseDownloadFileRequestPayload(const TArray<uint8>& ByteArray);
 	
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	void InitializeByPayload(const int32 MessageId, const FDownloadFileRequestPayload& FileInfo);
+	void InitializeByPayload(const FDownloadFileRequestPayload& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	void InitializeByByteArray(const TArray<uint8>& ByteArray);

@@ -32,13 +32,13 @@ class MESSENGER_API UUploadFileRequest : public UClientServerMessage
 
 public:
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	static UUploadFileRequest* CreateUploadFileRequest(const int32 MessageId, const FUploadFileRequestPayload& FileInfo);
+	static UUploadFileRequest* CreateUploadFileRequest(const FUploadFileRequestPayload& Payload);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	static const FUploadFileRequestPayload& ParseUploadFileRequestPayload(const TArray<uint8>& ByteArray);
 	
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	void InitializeByPayload(const int32 MessageId, const FUploadFileRequestPayload& FileInfo);
+	void InitializeByPayload(const FUploadFileRequestPayload& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	void InitializeByByteArray(const TArray<uint8>& ByteArray);

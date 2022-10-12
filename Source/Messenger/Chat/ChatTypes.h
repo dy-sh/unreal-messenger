@@ -5,6 +5,14 @@
 #include "CoreMinimal.h"
 #include "ChatTypes.generated.h"
 
+UENUM()
+enum class EClientServerMessageType:int8
+{
+	UploadFileRequest,
+	DownloadFileRequest,
+	DownloadFileResponse,
+};
+
 
 USTRUCT(BlueprintType)
 struct FUserInfo
