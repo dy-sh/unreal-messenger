@@ -46,7 +46,7 @@ void UFileTransferComponent::BeginPlay()
 }
 
 
-bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FString& FilePath)
+bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 {
 	if (!ChatComponent) return false;
 	if (!ChatComponent->GetRoomComponent()) return false;
@@ -70,8 +70,8 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 		return false;
 	}
 
-	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.FilePath = FilePath;
+	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
 
 	ServerRequestUploadingFile();
@@ -111,7 +111,7 @@ void UFileTransferComponent::ClientResponseUploadingFile_Implementation(const FS
 }
 
 
-bool UFileTransferComponent::DownloadFileFromServer(const FTransferredFileInfo& FileInfo)
+bool UFileTransferComponent::DownloadFileFromServer(const FString& FileId)
 {
 	if (!OnlineSessionsSubsystem) return false;
 	if (ProceedingFileInfo.State == ETransferringFileState::Uploading
@@ -127,8 +127,8 @@ bool UFileTransferComponent::DownloadFileFromServer(const FTransferredFileInfo& 
 		return false;
 	}
 
-	ProceedingFileInfo = FileInfo;
-
+	ProceedingFileInfo.FileId = FileId;
+	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.State = ETransferringFileState::Downloading;
 	ConnectToServer(ServerIpAddress, ServerPort);
 
@@ -207,7 +207,8 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 		Payload.FileId = ProceedingFileInfo.FileId;
 		Payload.UserId = ChatComponent->GetUserInfo().UserID;
 		Payload.UserName = ChatComponent->GetUserInfo().UserName;
-		Payload.FileName = FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(ProceedingFileInfo.FilePath);
+		Payload.FileName = FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(
+			                   ProceedingFileInfo.FilePath);
 		Payload.FileContent = ProceedingFileContent;
 
 		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(Payload);

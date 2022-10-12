@@ -14,7 +14,7 @@ void UFileInfoWidget::DownloadFileFromServer()
 	{
 		if (auto* FileTransferComponent = PC->FindComponentByClass<UFileTransferComponent>())
 		{
-			FileTransferComponent->DownloadFileFromServer(FileInfo);
+			FileTransferComponent->DownloadFileFromServer(Message.FileId);
 		}
 	}
 }

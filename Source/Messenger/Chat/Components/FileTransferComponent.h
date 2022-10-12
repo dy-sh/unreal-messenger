@@ -52,10 +52,10 @@ public:
 	void ClientResponseUploadingFile(const FString& FileId);
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	bool SendFileToServer(const FString& RoomId, const FString& FilePath);
+	bool SendFileToServer(const FString& FilePath);
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	bool DownloadFileFromServer(const FTransferredFileInfo& FileInfo);
+	bool DownloadFileFromServer(const FString& FileId);
 
 	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
 	ETransferringFileState GetState() const { return ProceedingFileInfo.State; }
