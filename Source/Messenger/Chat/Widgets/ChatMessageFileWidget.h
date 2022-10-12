@@ -27,4 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="FileInfo")
 	void SaveDownloadedFile(FString Path);
+
+	UFUNCTION(BlueprintPure, Category="FileInfo")
+	const FString& GetFileId();
 };

@@ -14,7 +14,7 @@ void UChatMessageFileWidget::DownloadFileFromServer()
 	{
 		if (auto* FileTransferComponent = PC->FindComponentByClass<UFileTransferComponent>())
 		{
-			FileTransferComponent->DownloadFileFromServer(Message.FileId);
+			FileTransferComponent->DownloadFileFromServer(GetFileId());
 		}
 	}
 }
@@ -32,4 +32,10 @@ void UChatMessageFileWidget::SaveDownloadedFile(FString Path)
 			FileTransferComponent->SaveDownloadedFile(FileInfo, Path);
 		}
 	}
+}
+
+
+const FString& UChatMessageFileWidget::GetFileId()
+{
+	return !Message.FileId.IsEmpty() ? Message.FileId : FileInfo.FileId;
 }
