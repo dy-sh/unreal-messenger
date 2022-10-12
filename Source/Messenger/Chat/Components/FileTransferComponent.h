@@ -91,5 +91,6 @@ protected:
 	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
 
 	void ReceiveDownloadFileResponse(const TArray<uint8> ByteArray);
+	void ReceiveUploadFileResponse(const TArray<uint8> ByteArray);
 	FString GetNotExistFileName(const FString& FilePath) const;
 };

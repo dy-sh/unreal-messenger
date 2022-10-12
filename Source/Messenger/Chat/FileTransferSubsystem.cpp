@@ -11,6 +11,7 @@
 #include "Protocol/DownloadFileRequest.h"
 #include "Protocol/DownloadFileResponse.h"
 #include "Protocol/UploadFileRequest.h"
+#include "Protocol/UploadFileResponse.h"
 #include "Room/ChatRoom.h"
 
 
@@ -69,7 +70,7 @@ void UFileTransferSubsystem::OnReceivedData(UConnectionBase* Connection, const T
 	EClientServerMessageType MessType = ParseMessageType(ByteArray);
 	switch (MessType)
 	{
-		case EClientServerMessageType::UploadFileRequest: ReceiveUploadFileRequest(ByteArray);
+		case EClientServerMessageType::UploadFileRequest: ReceiveUploadFileRequest(Connection, ByteArray);
 			break;
 		case EClientServerMessageType::DownloadFileRequest: ReceiveDownloadFileRequest(Connection, ByteArray);
 			break;
@@ -83,39 +84,45 @@ EClientServerMessageType UFileTransferSubsystem::ParseMessageType(const TArray<u
 	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
 	int32 MessageType;
 	int32 Offset = 0;
-	UClientServerMessage::ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	UClientServerMessage::ReadPayloadFromDataByteArray(BYTE_ARRAY_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
 	return (EClientServerMessageType) MessageType;
 }
 
 
-void UFileTransferSubsystem::ReceiveUploadFileRequest(const TArray<uint8>& ByteArray)
+void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
-	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
+	FUploadFileRequestPayload Request = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
+
+	FUploadFileResponsePayload Response;
+	Response.FileId = Request.FileName;
+	Response.bSuccess = false;
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + ReceivedFile.FileName;
+	FString FilePath = SavedPath + Request.FileName;
 	FilePath = GetNotExistFileName(FilePath);
 
-	if (!FFileHelper::SaveArrayToFile(ReceivedFile.FileContent, *FilePath))
+	if (FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
+	{
+		Response.bSuccess = true;
+	}
+	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
-		return; // todo: send bad request
 	}
 
-	UE_LOG(LogTemp, Warning, L"RoomId: %s", *ReceivedFile.RoomId);
-	UE_LOG(LogTemp, Warning, L"UserId: %s", *ReceivedFile.UserId);
-	UE_LOG(LogTemp, Warning, L"FileName: %s", *ReceivedFile.FileName);
-	UE_LOG(LogTemp, Warning, L"FileSize: %i", ReceivedFile.FileContent.Num());
+	const auto* Message = UUploadFileResponse::CreateUploadFileResponse(Response);
+	Connection->Send(Message->GetByteArray());
 
 	FTransferredFileInfo FileInfo;
-	FileInfo.RoomId = ReceivedFile.RoomId;
-	FileInfo.UserId = ReceivedFile.UserId;
-	FileInfo.UserName = "User";
+	FileInfo.RoomId = Request.RoomId;
+	FileInfo.UserId = Request.UserId;
+	FileInfo.UserName = Request.UserName;
 	FileInfo.FileId = FGuid::NewGuid().ToString();
-	FileInfo.FileName = ReceivedFile.FileName;
+	FileInfo.FileName = Request.FileName;
 	FileInfo.FilePath = FilePath;
 	FileInfo.Date = FDateTime::Now();
+	FileInfo.State = ETransferringFileState::None;
 
 	SendFileInfoToAllUsersInRoom(FileInfo, false);
 }
@@ -125,34 +132,40 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 {
 	FDownloadFileRequestPayload Request = UDownloadFileRequest::ParseDownloadFileRequestPayload(ByteArray);
 
-	auto* Room = ChatSubsystem->GetRoom(Request.RoomId);
-	if (!Room) return; // todo: send bad request
+	FDownloadFileResponsePayload Response;
+	Response.FileId = Request.FileId;
+	Response.bSuccess = false;
 
-	FTransferredFileInfo FileInfo;
-	if (!Room->GetFileInfo(Request.FileId, FileInfo)) return; // todo: send bad request
-
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-
-	if (!FileManager.FileExists(*FileInfo.FilePath))
+	if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
 	{
-		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FileInfo.FilePath);
-		return; // todo: send bad request
+		FTransferredFileInfo FileInfo;
+		if (Room->GetFileInfo(Request.FileId, FileInfo))
+		{
+			Response.FileName = FileInfo.FileName;
+			Response.RoomId = FileInfo.RoomId;
+			Response.UserId = FileInfo.UserId;
+			Response.FileId = FileInfo.FileId;
+
+			IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+			if (FileManager.FileExists(*FileInfo.FilePath))
+			{
+				if (FFileHelper::LoadFileToArray(Response.FileContent, *FileInfo.FilePath))
+				{
+					Response.bSuccess = true;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Failed to load file %s"), *FileInfo.FilePath);
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FileInfo.FilePath);
+			}
+		}
 	}
 
-	FDownloadFileResponsePayload FileToSend;
-
-	if (!FFileHelper::LoadFileToArray(FileToSend.FileContent, *FileInfo.FilePath))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load file %s"), *FileInfo.FilePath);
-		return; // todo: send bad request
-	}
-
-	FileToSend.FileName = FileInfo.FileName;
-	FileToSend.RoomId = FileInfo.RoomId;
-	FileToSend.UserId = FileInfo.UserId;
-	FileToSend.FileId = FileInfo.FileId;
-
-	const auto* Message = UDownloadFileResponse::CreateDownloadFileResponse(FileToSend);
+	const auto* Message = UDownloadFileResponse::CreateDownloadFileResponse(Response);
 	Connection->Send(Message->GetByteArray());
 }
 

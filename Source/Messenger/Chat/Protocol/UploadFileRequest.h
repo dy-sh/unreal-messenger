@@ -19,6 +19,9 @@ struct FUploadFileRequestPayload
 	FString UserId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString UserName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FileName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

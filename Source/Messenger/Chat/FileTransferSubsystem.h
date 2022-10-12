@@ -60,7 +60,7 @@ protected:
 
 	FTimerHandle StartServerTimerHandle;
 
-	void ReceiveUploadFileRequest(const TArray<uint8>& ByteArray);
+	void ReceiveUploadFileRequest(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
 
 	void ReceiveDownloadFileRequest(UConnectionBase* Connection, const TArray<uint8> ByteArray);
 

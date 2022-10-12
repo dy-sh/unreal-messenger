@@ -10,6 +10,7 @@
 #include "Messenger/Chat/FileTransferSubsystem.h"
 #include "Messenger/Chat/Protocol/DownloadFileRequest.h"
 #include "Messenger/Chat/Protocol/DownloadFileResponse.h"
+#include "Messenger/Chat/Protocol/UploadFileResponse.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 
 
@@ -55,15 +56,15 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
-	if (!FileManager.FileExists(*ProceedingFileInfo.FilePath))
+	if (!FileManager.FileExists(*FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *ProceedingFileInfo.FilePath);
+		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FilePath);
 		return false;
 	}
 
-	if (!FFileHelper::LoadFileToArray(ProceedingFileContent, *ProceedingFileInfo.FilePath))
+	if (!FFileHelper::LoadFileToArray(ProceedingFileContent, *FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to read file %s"), *ProceedingFileInfo.FilePath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to read file %s"), *FilePath);
 		return false;
 	}
 
@@ -75,7 +76,7 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
 
 	ServerRequestUploadingFile();
-	
+
 	return true;
 }
 
@@ -205,19 +206,32 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 
 void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 {
+	if (ProceedingFileInfo.State == ETransferringFileState::Uploading)
+	{
+		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, false);
+	}
+	else if (ProceedingFileInfo.State == ETransferringFileState::Downloading)
+	{
+		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, false);
+	}
+
 	ProceedingFileInfo.State = ETransferringFileState::None;
 }
 
 
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
-	EClientServerMessageType MessType = ParseMessageType(ByteArray);
+	const EClientServerMessageType MessType = ParseMessageType(ByteArray);
 	switch (MessType)
 	{
+		case EClientServerMessageType::UploadFileResponse: ReceiveUploadFileResponse(ByteArray);
+			break;
 		case EClientServerMessageType::DownloadFileResponse: ReceiveDownloadFileResponse(ByteArray);
 			break;
 		default: break;
 	}
+	
+	CloseConnection();
 }
 
 
@@ -226,28 +240,38 @@ EClientServerMessageType UFileTransferComponent::ParseMessageType(const TArray<u
 	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
 	int32 MessageType;
 	int32 Offset = 0;
-	UClientServerMessage::ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	UClientServerMessage::ReadPayloadFromDataByteArray(BYTE_ARRAY_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
 	return (EClientServerMessageType) MessageType;
+}
+
+
+void UFileTransferComponent::ReceiveUploadFileResponse(const TArray<uint8> ByteArray)
+{
+	const FUploadFileResponsePayload Response = UUploadFileResponse::ParseUploadFileResponsePayload(ByteArray);
+
+	ProceedingFileInfo.State = ETransferringFileState::Uploaded;
+	OnUploadingFileComplete.Broadcast(ProceedingFileInfo, Response.bSuccess);
 }
 
 
 void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> ByteArray)
 {
-	FDownloadFileResponsePayload ReceivedFile = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
+	const FDownloadFileResponsePayload Response = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
 
 	// save file
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + ReceivedFile.FileName;
+	FString FilePath = SavedPath + Response.FileName;
 	FilePath = GetNotExistFileName(FilePath);
 
-	if (!FFileHelper::SaveArrayToFile(ReceivedFile.FileContent, *FilePath))
+	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
 		return; // todo: send bad request
 	}
 
-	OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, true);
+	ProceedingFileInfo.State = ETransferringFileState::Downloaded;
+	OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, Response.bSuccess);
 }
 
 

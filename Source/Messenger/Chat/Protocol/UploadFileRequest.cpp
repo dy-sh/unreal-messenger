@@ -24,7 +24,7 @@ const FUploadFileRequestPayload& UUploadFileRequest::ParseUploadFileRequestPaylo
 
 void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& FileInfo)
 {
-	MessType = (int32)EClientServerMessageType::UploadFileRequest;
+	MessType = (int32) EClientServerMessageType::UploadFileRequest;
 	PayloadData = FileInfo;
 
 	TArray<uint8> RoomIdByteArray;
@@ -33,24 +33,29 @@ void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& Fi
 	TArray<uint8> UserIdByteArray;
 	UNetworkUtils::StringToByteArray(FileInfo.UserId, UserIdByteArray);
 
+	TArray<uint8> UserNameByteArray;
+	UNetworkUtils::StringToByteArray(FileInfo.UserName, UserNameByteArray); 
+
 	TArray<uint8> FileNameByteArray;
 	UNetworkUtils::StringToByteArray(FileInfo.FileName, FileNameByteArray);
 
 	const int32 Length =
-		DATA_SIZE_BIT_DEPTH + //MessageType
-		DATA_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + FileInfo.FileContent.Num();
+		1 + //MessageType
+		BYTE_ARRAY_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
+		BYTE_ARRAY_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
+		BYTE_ARRAY_SIZE_BIT_DEPTH + UserNameByteArray.Num() +
+		BYTE_ARRAY_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
+		BYTE_ARRAY_SIZE_BIT_DEPTH + FileInfo.FileContent.Num();
 
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessType, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, RoomIdByteArray, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, UserIdByteArray, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileNameByteArray, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileInfo.FileContent, DataByteArray, Offset);
+	WritePayload(MessType, DataByteArray, Offset);
+	WritePayload(RoomIdByteArray, DataByteArray, Offset);
+	WritePayload(UserIdByteArray, DataByteArray, Offset);
+	WritePayload(UserNameByteArray, DataByteArray, Offset);
+	WritePayload(FileNameByteArray, DataByteArray, Offset);
+	WritePayload(FileInfo.FileContent, DataByteArray, Offset);
 }
 
 
@@ -59,16 +64,19 @@ void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 	int32 MessageType;
 	TArray<uint8> RoomIdByteArray;
 	TArray<uint8> UserIdByteArray;
+	TArray<uint8> UserNameByteArray;
 	TArray<uint8> FileNameByteArray;
 
 	int32 Offset = 0;
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, RoomIdByteArray, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, UserIdByteArray, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, FileNameByteArray, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, PayloadData.FileContent, Offset);
+	ReadPayload(ByteArray, MessageType, Offset);
+	ReadPayload(ByteArray, RoomIdByteArray, Offset);
+	ReadPayload(ByteArray, UserIdByteArray, Offset);
+	ReadPayload(ByteArray, UserNameByteArray, Offset);
+	ReadPayload(ByteArray, FileNameByteArray, Offset);
+	ReadPayload(ByteArray, PayloadData.FileContent, Offset);
 
 	PayloadData.RoomId = UNetworkUtils::ByteArrayToString(RoomIdByteArray);
 	PayloadData.UserId = UNetworkUtils::ByteArrayToString(UserIdByteArray);
+	PayloadData.UserName = UNetworkUtils::ByteArrayToString(UserNameByteArray);
 	PayloadData.FileName = UNetworkUtils::ByteArrayToString(FileNameByteArray);
 }

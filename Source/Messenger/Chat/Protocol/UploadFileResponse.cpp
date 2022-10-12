@@ -24,23 +24,23 @@ const FUploadFileResponsePayload& UUploadFileResponse::ParseUploadFileResponsePa
 
 void UUploadFileResponse::InitializeByPayload(const FUploadFileResponsePayload& FileInfo)
 {
-	MessType = (int32)EClientServerMessageType::UploadFileResponse;
+	MessType = (int32) EClientServerMessageType::UploadFileResponse;
 	PayloadData = FileInfo;
 
 	TArray<uint8> FileIdByteArray;
 	UNetworkUtils::StringToByteArray(FileInfo.FileId, FileIdByteArray);
 
 	const int32 Length =
-		DATA_SIZE_BIT_DEPTH + //MessageType
-		1 +                   //bSuccess
-		DATA_SIZE_BIT_DEPTH + FileIdByteArray.Num();
+		1 + //MessageType
+		1 + //bSuccess
+		BYTE_ARRAY_SIZE_BIT_DEPTH + FileIdByteArray.Num();
 
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessType, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileInfo.bSuccess, DataByteArray, Offset);
-	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileIdByteArray, DataByteArray, Offset);
+	WritePayload(MessType, DataByteArray, Offset);
+	WritePayload(FileInfo.bSuccess, DataByteArray, Offset);
+	WritePayload(FileIdByteArray, DataByteArray, Offset);
 }
 
 
@@ -50,9 +50,9 @@ void UUploadFileResponse::InitializeByByteArray(const TArray<uint8>& ByteArray)
 	TArray<uint8> FileIdByteArray;
 
 	int32 Offset = 0;
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, PayloadData.bSuccess, Offset);
-	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, FileIdByteArray, Offset);
-	
+	ReadPayload(ByteArray, MessageType, Offset);
+	ReadPayload(ByteArray, PayloadData.bSuccess, Offset);
+	ReadPayload(ByteArray, FileIdByteArray, Offset);
+
 	PayloadData.FileId = UNetworkUtils::ByteArrayToString(FileIdByteArray);
 }

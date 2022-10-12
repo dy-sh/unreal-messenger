@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "ChatTypes.generated.h"
 
-UENUM()
-enum class EClientServerMessageType:int8
+UENUM(BlueprintType)
+enum class EClientServerMessageType:uint8
 {
 	Unknown,
 	UploadFileRequest,
@@ -86,8 +86,8 @@ struct FChatSettings
 	FString NickName;
 };
 
-UENUM()
-enum class ETransferringFileState
+UENUM(BlueprintType)
+enum class ETransferringFileState:uint8
 {
 	None,
 	RequestingUpload,
