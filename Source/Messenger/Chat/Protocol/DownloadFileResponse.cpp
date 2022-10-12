@@ -28,10 +28,8 @@ void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePaylo
 	const int32 Length =
 		CalculatePayloadSize(GetMessageType()) +
 		CalculatePayloadSize(FileInfo.bSuccess) +
-		CalculatePayloadSize(FileInfo.RoomId) +
-		CalculatePayloadSize(FileInfo.UserId) +
-		CalculatePayloadSize(FileInfo.FileName) +
 		CalculatePayloadSize(FileInfo.FileId) +
+		CalculatePayloadSize(FileInfo.FileName) +
 		CalculatePayloadSize(FileInfo.FileContent);
 
 	DataByteArray.SetNum(Length, false);
@@ -39,10 +37,8 @@ void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePaylo
 	int32 Offset = 0;
 	WritePayload(GetMessageType(), DataByteArray, Offset);
 	WritePayload(FileInfo.bSuccess, DataByteArray, Offset);
-	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
-	WritePayload(FileInfo.UserId, DataByteArray, Offset);
-	WritePayload(FileInfo.FileName, DataByteArray, Offset);
 	WritePayload(FileInfo.FileId, DataByteArray, Offset);
+	WritePayload(FileInfo.FileName, DataByteArray, Offset);
 	WritePayload(FileInfo.FileContent, DataByteArray, Offset);
 }
 
@@ -55,9 +51,7 @@ void UDownloadFileResponse::InitializeByByteArray(const TArray<uint8>& ByteArray
 	ReadPayload(ByteArray, MessageType, Offset);
 	checkf(MessageType==GetMessageType(), TEXT("Failed to deserialize message. Wrong message type!"));
 	ReadPayload(ByteArray, PayloadData.bSuccess, Offset);
-	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
-	ReadPayload(ByteArray, PayloadData.UserId, Offset);
-	ReadPayload(ByteArray, PayloadData.FileName, Offset);
 	ReadPayload(ByteArray, PayloadData.FileId, Offset);
+	ReadPayload(ByteArray, PayloadData.FileName, Offset);
 	ReadPayload(ByteArray, PayloadData.FileContent, Offset);
 }

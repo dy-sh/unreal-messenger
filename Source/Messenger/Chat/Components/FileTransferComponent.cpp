@@ -70,12 +70,8 @@ bool UFileTransferComponent::SendFileToServer(const FString& RoomId, const FStri
 		return false;
 	}
 
-	ProceedingFileInfo.Date = FDateTime::Now();
-	ProceedingFileInfo.RoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
-	ProceedingFileInfo.UserId = ChatComponent->GetUserInfo().UserID;
-	ProceedingFileInfo.UserName = ChatComponent->GetUserInfo().UserName;
+	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.FilePath = FilePath;
-	ProceedingFileInfo.FileName = FPaths::GetBaseFilename(FilePath) + "." + FPaths::GetExtension(FilePath);
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
 
 	ServerRequestUploadingFile();
@@ -207,11 +203,11 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 	if (ProceedingFileInfo.State == ETransferringFileState::Uploading)
 	{
 		FUploadFileRequestPayload Payload;
-		Payload.RoomId = ProceedingFileInfo.RoomId;
+		Payload.RoomId = ProceedingFileRoomId;
 		Payload.FileId = ProceedingFileInfo.FileId;
-		Payload.UserId = ProceedingFileInfo.UserId;
-		Payload.UserName = ProceedingFileInfo.UserName;
-		Payload.FileName = ProceedingFileInfo.FileName;
+		Payload.UserId = ChatComponent->GetUserInfo().UserID;
+		Payload.UserName = ChatComponent->GetUserInfo().UserName;
+		Payload.FileName = FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(ProceedingFileInfo.FilePath);
 		Payload.FileContent = ProceedingFileContent;
 
 		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(Payload);
@@ -220,7 +216,7 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 	else if (ProceedingFileInfo.State == ETransferringFileState::Downloading)
 	{
 		FDownloadFileRequestPayload Payload;
-		Payload.RoomId = ProceedingFileInfo.RoomId;
+		Payload.RoomId = ProceedingFileRoomId;
 		Payload.FileId = ProceedingFileInfo.FileId;
 		Payload.UserId = ChatComponent->GetUserInfo().UserID;
 

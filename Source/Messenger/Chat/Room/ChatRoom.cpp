@@ -25,25 +25,6 @@ TArray<FChatMessage> UChatRoom::GetLastMessages(const int32 Number)
 }
 
 
-TArray<FTransferredFileInfo> UChatRoom::GetLastFileInfos(const int32 Number)
-{
-	TArray<FTransferredFileInfo> LastFiles;
-
-	const int32 FirstFileIndex = FMath::Max(FileInfos.Num() - Number, 0);
-	for (int32 i = FirstFileIndex; i < FileInfos.Num(); ++i)
-	{
-		LastFiles.Add(FileInfos[i]);
-
-		if (LastFiles.Num() >= Number)
-		{
-			break;
-		}
-	}
-
-	return LastFiles;
-}
-
-
 bool UChatRoom::GetFileInfo(const FString& FileId, FTransferredFileInfo& FileInfo)
 {
 	for (const auto Info : FileInfos)

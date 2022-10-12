@@ -34,16 +34,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddMessage(const FChatMessage& Message) { ChatMessages.Add(Message); }
 
-
 	UFUNCTION(BlueprintCallable)
 	TArray<FChatMessage> GetLastMessages(const int32 Number);
 
 	UFUNCTION(BlueprintCallable)
 	void AddFileInfo(const FTransferredFileInfo& FileInfo) { FileInfos.Add(FileInfo); }
 
-
-	UFUNCTION(BlueprintCallable)
-	TArray<FTransferredFileInfo> GetLastFileInfos(const int32 Number);
 
 	UFUNCTION(BlueprintPure)
 	bool GetFileInfo(const FString& FileId, FTransferredFileInfo& FileInfo);

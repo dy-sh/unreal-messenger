@@ -69,24 +69,6 @@ struct FUserPrivateInfo
 };
 
 
-USTRUCT(BlueprintType)
-struct FChatMessage
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Text;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FDateTime Date;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString UserID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString UserName;
-};
-
 UENUM(BlueprintType)
 enum class ETransferringFileState:uint8
 {
@@ -98,17 +80,13 @@ enum class ETransferringFileState:uint8
 	Downloaded
 };
 
-
 USTRUCT(BlueprintType)
-struct FTransferredFileInfo
+struct FChatMessage
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString FileId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString RoomId;
+	FDateTime Date;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString UserId;
@@ -117,14 +95,28 @@ struct FTransferredFileInfo
 	FString UserName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString FileName;
+	FString Text;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FileId;
+};
+
+
+USTRUCT(BlueprintType)
+struct FTransferredFileInfo
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FileId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FileName;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FilePath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FDateTime Date;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETransferringFileState State;
 };
+

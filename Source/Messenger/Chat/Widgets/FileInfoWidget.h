@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "ChatMessageWidget.h"
 #include "Messenger/Chat/ChatTypes.h"
 #include "FileInfoWidget.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class MESSENGER_API UFileInfoWidget : public UUserWidget
+class MESSENGER_API UFileInfoWidget : public UChatMessageWidget
 {
 	GENERATED_BODY()
 	

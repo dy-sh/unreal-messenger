@@ -4,6 +4,7 @@
 #include "RoomComponent.h"
 
 #include "ChatComponent.h"
+#include "NetworkMessage.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
 #include "Messenger/Chat/ChatSubsystem.h"

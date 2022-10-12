@@ -79,6 +79,7 @@ protected:
 	UChatComponent* ChatComponent;
 
 	FTransferredFileInfo ProceedingFileInfo;
+	FString ProceedingFileRoomId;
 	TArray<uint8> ProceedingFileContent;
 
 

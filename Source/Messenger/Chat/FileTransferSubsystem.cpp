@@ -119,7 +119,7 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 		// save file
 		IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 		const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-		FString FilePath = SavedPath + Request.FileName;
+		FString FilePath = SavedPath + Request.FileName; // todo: escape filename to prevent cheating
 		FilePath = GetNotExistFileName(FilePath);
 
 		if (FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
@@ -131,21 +131,36 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 			UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
 		}
 
-		// send message to all users
-		FTransferredFileInfo FileInfo;
-		FileInfo.RoomId = Request.RoomId;
-		FileInfo.UserId = Request.UserId;
-		FileInfo.UserName = Request.UserName;
-		FileInfo.FileId = Request.FileId;
-		FileInfo.FileName = Request.FileName;
-		FileInfo.FilePath = FilePath;
-		FileInfo.Date = FDateTime::Now();
-		FileInfo.State = ETransferringFileState::None;
+		if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
+		{
+			FTransferredFileInfo FileInfo;
+			FileInfo.FileId = Request.FileId;
+			FileInfo.FileName = Request.FileName;
+			FileInfo.FilePath = FilePath;
+			FileInfo.State = ETransferringFileState::None;
+			Room->AddFileInfo(FileInfo);
 
-		SendFileInfoToAllUsersInRoom(FileInfo, false);
-	}else
+			FChatMessage ChatMessage;
+			ChatMessage.Date = FDateTime::Now();
+			ChatMessage.UserName = Request.UserName;
+			ChatMessage.UserId = Request.UserId;
+			ChatMessage.FileId = Request.FileId;
+			ChatMessage.Text = Request.FileName;
+			Room->AddMessage(ChatMessage);
+
+			for (auto* ChatComponent : Room->GetActiveChatComponents())
+			{
+				ChatComponent->ClientReceiveMessage(ChatMessage); // todo: add encryption
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed receive file. Room does not exist."));
+		}
+	}
+	else
 	{
-		UE_LOG(LogTemp,Error,TEXT("Received a file that the server does not expect from this user."));
+		UE_LOG(LogTemp, Error, TEXT("Received a file that the server does not expect from this user."));
 	}
 
 	const auto* Message = UUploadFileResponse::CreateUploadFileResponse(Response);
@@ -158,7 +173,7 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 	FDownloadFileRequestPayload Request = UDownloadFileRequest::ParseDownloadFileRequestPayload(ByteArray);
 
 	FDownloadFileResponsePayload Response;
-	Response.FileId = Request.FileId;
+	Response.FileId = Request.FileId;	
 	Response.bSuccess = false;
 
 	if (auto* Room = ChatSubsystem->GetRoom(Request.RoomId))
@@ -166,16 +181,14 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 		FTransferredFileInfo FileInfo;
 		if (Room->GetFileInfo(Request.FileId, FileInfo))
 		{
-			Response.FileName = FileInfo.FileName;
-			Response.RoomId = FileInfo.RoomId;
-			Response.UserId = FileInfo.UserId;
 			Response.FileId = FileInfo.FileId;
-
+			Response.FileName = FileInfo.FileName;
+			
 			IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 			if (FileManager.FileExists(*FileInfo.FilePath))
 			{
 				if (FFileHelper::LoadFileToArray(Response.FileContent, *FileInfo.FilePath))
-				{
+				{					
 					Response.bSuccess = true;
 				}
 				else
@@ -192,44 +205,6 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 
 	const auto* Message = UDownloadFileResponse::CreateDownloadFileResponse(Response);
 	Connection->Send(Message->GetByteArray());
-}
-
-
-void UFileTransferSubsystem::SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, const bool SendEncrypted)
-{
-	if (!ChatSubsystem) return;
-
-	auto* Room = ChatSubsystem->GetRoom(FileInfo.RoomId);
-	if (!Room) return;
-
-	Room->AddFileInfo(FileInfo);
-
-	for (auto* ChatComponent : Room->GetActiveChatComponents())
-	{
-		if (SendEncrypted)
-		{
-			// if (!ChatComponent->GetAuthorizationComponent()) return;
-			//
-			// const FEncryptionKeys Keys = ChatComponent->GetAuthorizationComponent()->GetClientEncryptionKeys();
-			//
-			// FChatMessage EncryptedMessage = Message;
-			// FString EncryptedData;
-			// int32 PayloadSize;
-			// if (!UOpenSSLEncryptionLibrary::EncryptAes(Message.Text, Keys.AesKey, Keys.AesIvec, EncryptedData,
-			// 	PayloadSize))
-			// {
-			// 	UE_LOG(LogChatComponent, Error, TEXT("Faild to encrypt server message"))
-			// 	return;
-			// }
-			//
-			// EncryptedMessage.Text = EncryptedData;
-			// ChatComponent->ClientReceiveEncryptedFileInfo(EncryptedMessage, PayloadSize);
-		}
-		else
-		{
-			ChatComponent->ClientReceiveFileInfo(FileInfo);
-		}
-	}
 }
 
 

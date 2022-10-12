@@ -18,16 +18,10 @@ struct FDownloadFileResponsePayload
 	bool bSuccess;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString RoomId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString UserId;
+	FString FileId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FileName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString FileId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<uint8> FileContent;

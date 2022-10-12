@@ -31,9 +31,6 @@ public:
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
 
-
-	void SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, bool SendEncrypted);
-
 	FString GetNotExistFileName(const FString& FilePath) const;
 
 	UConnectionHandler* GetConnectionHandler() const { return ConnectionHandler; }

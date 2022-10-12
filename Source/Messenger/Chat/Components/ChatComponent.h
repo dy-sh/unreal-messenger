@@ -70,9 +70,6 @@ public:
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void ClientReceiveEncryptedMessage(const FChatMessage& EncryptedMessage, const int32 PayloadSize);
 
-	
-	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void ClientReceiveFileInfo(const FTransferredFileInfo& FileInfo);
 
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)

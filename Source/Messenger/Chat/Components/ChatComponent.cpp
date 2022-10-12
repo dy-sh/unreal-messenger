@@ -126,12 +126,6 @@ void UChatComponent::SendEncryptedMessageToServer(const FString& Text)
 }
 
 
-void UChatComponent::ClientReceiveFileInfo_Implementation(const FTransferredFileInfo& FileInfo)
-{
-	UE_LOG(LogChatComponent, Warning, TEXT("Client received file info: %s"), *FileInfo.FileName);
-
-	OnFileInfoReceived.Broadcast(FileInfo);
-}
 
 
 void UChatComponent::ServerSendEncryptedMessage_Implementation(const FString& EncryptedText, const int32 PayloadSize)
@@ -200,7 +194,7 @@ void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool
 	FChatMessage Message;
 	Message.Text = Text;
 	Message.Date = FDateTime::Now();
-	Message.UserID = ChatUser->Info.UserID;
+	Message.UserId = ChatUser->Info.UserID;
 	Message.UserName = ChatUser->Info.UserName;
 
 	Room->AddMessage(Message);
