@@ -6,8 +6,8 @@
 #include "ChatComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpClient.h"
-#include "FileTransferServerComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "Messenger/Chat/FileTransferSubsystem.h"
 #include "Messenger/Chat/Protocol/DownloadFileRequest.h"
 #include "Messenger/Chat/Protocol/DownloadFileResponse.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
@@ -26,9 +26,13 @@ void UFileTransferComponent::BeginPlay()
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
 
-	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
+	if (GetWorld()->GetAuthGameMode() != nullptr)
 	{
-		FileTransferServerComponent = GameMode->FindComponentByClass<UFileTransferServerComponent>();
+		FileTransferSubsystem = GetWorld()->GetSubsystem<UFileTransferSubsystem>();
+		if (!FileTransferSubsystem->IsServerStarted())
+		{
+			FileTransferSubsystem->StartServer();
+		}
 	}
 
 	ChatComponent = GetOwner()->FindComponentByClass<UChatComponent>();
@@ -163,8 +167,6 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 	{
 		CloseConnection();
 	}
-
-	
 }
 
 
@@ -179,9 +181,8 @@ void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const T
 	switch (MessType)
 	{
 		case EClientServerMessageType::DownloadFileResponse: ReceiveDownloadFileResponse(ByteArray);
-		break;
-		default:
 			break;
+		default: break;
 	}
 }
 

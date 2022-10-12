@@ -11,9 +11,10 @@
 class UConnectionBase;
 class UConnectionHandler;
 class UConnectionTcpClient;
-class UFileTransferServerComponent;
+class UFileTransferSubsystem;
 class UOnlineSessionsSubsystem;
 class UChatComponent;
+
 
 
 UENUM(BlueprintType)
@@ -52,7 +53,7 @@ protected:
 	UPROPERTY()
 	UConnectionTcpClient* Client;
 	UPROPERTY()
-	UFileTransferServerComponent* FileTransferServerComponent;
+	UFileTransferSubsystem* FileTransferSubsystem;
 	UPROPERTY()
 	UOnlineSessionsSubsystem* OnlineSessionsSubsystem;
 	UPROPERTY()

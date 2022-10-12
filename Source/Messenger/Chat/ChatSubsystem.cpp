@@ -1,15 +1,15 @@
 ﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 
-#include "ChatServerComponent.h"
-#include "ChatComponent.h"
+#include "ChatSubsystem.h"
+
 #include "Messenger/Authorization/AuthorizationComponent.h"
-#include "Messenger/Chat/Room/ChatRoom.h"
-#include "Messenger/Chat/User/ChatUser.h"
 #include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
+#include "Room/ChatRoom.h"
+#include "User/ChatUser.h"
 
 
-bool UChatServerComponent::CreateRoom(const FChatRoomSettings& Settings, FString& RoomId)
+bool UChatSubsystem::CreateRoom(const FChatRoomSettings& Settings, FString& RoomId)
 {
 	RoomId = FGuid::NewGuid().ToString();
 
@@ -18,7 +18,7 @@ bool UChatServerComponent::CreateRoom(const FChatRoomSettings& Settings, FString
 		return false;
 	}
 
-	auto* Room = NewObject<UChatRoom>(GetOwner());
+	auto* Room = NewObject<UChatRoom>(this);
 
 	if (!Room)
 	{
@@ -34,7 +34,7 @@ bool UChatServerComponent::CreateRoom(const FChatRoomSettings& Settings, FString
 }
 
 
-UChatUser* UChatServerComponent::AddUser(UChatComponent* ChatComponent, UAuthorizationComponent* AuthorizationComponent)
+UChatUser* UChatSubsystem::AddUser(UChatComponent* ChatComponent, UAuthorizationComponent* AuthorizationComponent)
 {
 	if (!ChatComponent) return nullptr;
 	if (!AuthorizationComponent) return nullptr;
@@ -50,7 +50,7 @@ UChatUser* UChatServerComponent::AddUser(UChatComponent* ChatComponent, UAuthori
 	}
 	else
 	{
-		User = NewObject<UChatUser>(GetOwner());
+		User = NewObject<UChatUser>(this);
 		if (User)
 		{
 			Users.Add(UserId, User);
@@ -68,7 +68,7 @@ UChatUser* UChatServerComponent::AddUser(UChatComponent* ChatComponent, UAuthori
 }
 
 
-bool UChatServerComponent::RemoveUser(UChatComponent* ChatComponent, UAuthorizationComponent* AuthorizationComponent)
+bool UChatSubsystem::RemoveUser(UChatComponent* ChatComponent, UAuthorizationComponent* AuthorizationComponent)
 {
 	if (!ChatComponent) return false;
 	if (!AuthorizationComponent) return false;
@@ -86,13 +86,13 @@ bool UChatServerComponent::RemoveUser(UChatComponent* ChatComponent, UAuthorizat
 }
 
 
-UChatRoom* UChatServerComponent::GetRoom(const FString& RoomId) const
+UChatRoom* UChatSubsystem::GetRoom(const FString& RoomId) const
 {
 	return ChatRooms.Contains(RoomId) ? ChatRooms[RoomId] : nullptr;
 }
 
 
-UChatUser* UChatServerComponent::GetUser(const FString& UserId) const
+UChatUser* UChatSubsystem::GetUser(const FString& UserId) const
 {
 	return Users.Contains(UserId) ? Users[UserId] : nullptr;
 }

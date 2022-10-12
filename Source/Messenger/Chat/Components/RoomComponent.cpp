@@ -4,9 +4,9 @@
 #include "RoomComponent.h"
 
 #include "ChatComponent.h"
-#include "ChatServerComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
+#include "Messenger/Chat/ChatSubsystem.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 #include "Messenger/Chat/User/ChatUser.h"
 
@@ -18,9 +18,9 @@ void URoomComponent::BeginPlay()
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
 
-	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
+	if (GetOwner()->HasAuthority())
 	{
-		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
+		ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>();
 	}
 
 	ChatComponent = GetOwner()->FindComponentByClass<UChatComponent>();
@@ -55,7 +55,7 @@ void URoomComponent::OnAuthorizationComplete(const EAuthorizationState State, co
 
 void URoomComponent::ServerGetJoinedChatRooms_Implementation()
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 	if (!ChatComponent->ChatUser) return;
 
@@ -64,7 +64,7 @@ void URoomComponent::ServerGetJoinedChatRooms_Implementation()
 
 	for (const FString& RoomId : ChatComponent->ChatUser->PrivateInfo.JoinedRoomIds)
 	{
-		if (const auto* Room = ChatServerComponent->GetRoom(RoomId))
+		if (const auto* Room = ChatSubsystem->GetRoom(RoomId))
 		{
 			RoomIds.Add(RoomId);
 			RoomSettings.Add(Room->GetRoomSettings());
@@ -92,7 +92,7 @@ void URoomComponent::ClientSetJoinedChatRooms_Implementation(const TArray<FStrin
 void URoomComponent::ServerCreateRoom_Implementation(const FChatRoomSettings& Settings)
 {
 	FString RoomId;
-	if (ChatServerComponent->CreateRoom(Settings, RoomId))
+	if (ChatSubsystem->CreateRoom(Settings, RoomId))
 	{
 		ServerJoinRoom(RoomId);
 	}
@@ -101,11 +101,11 @@ void URoomComponent::ServerCreateRoom_Implementation(const FChatRoomSettings& Se
 
 void URoomComponent::ServerJoinRoom_Implementation(const FString& RoomId)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 	if (!ChatComponent->ChatUser) return;
 
-	auto* Room = ChatServerComponent->GetRoom(RoomId);
+	auto* Room = ChatSubsystem->GetRoom(RoomId);
 	if (!Room) return;
 
 	Room->JoinUser(ChatComponent->ChatUser->Info.UserID);
@@ -138,11 +138,11 @@ void URoomComponent::ClientJoinRoom_Implementation(const FString& RoomId, const 
 
 void URoomComponent::ServerLeaveRoom_Implementation(const FString& RoomId)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 	if (!ChatComponent->ChatUser) return;
 
-	auto* Room = ChatServerComponent->GetRoom(RoomId);
+	auto* Room = ChatSubsystem->GetRoom(RoomId);
 	if (!Room) return;
 
 	Room->LeaveUser(ChatComponent->ChatUser->Info.UserID);
@@ -179,15 +179,15 @@ void URoomComponent::ClientLeaveRoom_Implementation(const FString& RoomId, const
 
 void URoomComponent::ServerEnterRoom_Implementation(const FString& RoomId)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 
-	if (ChatServerComponent->GetRoom(ActiveRoomId))
+	if (ChatSubsystem->GetRoom(ActiveRoomId))
 	{
 		ServerExitRoom(ActiveRoomId);
 	}
 
-	auto* Room = ChatServerComponent->GetRoom(RoomId);
+	auto* Room = ChatSubsystem->GetRoom(RoomId);
 	if (!Room) return;
 
 	ActiveRoomId = RoomId;
@@ -208,10 +208,10 @@ void URoomComponent::ClientEnterRoom_Implementation(const FString& RoomId, const
 
 void URoomComponent::ServerExitRoom_Implementation(const FString& RoomId)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 
-	auto* Room = ChatServerComponent->GetRoom(RoomId);
+	auto* Room = ChatSubsystem->GetRoom(RoomId);
 	if (!Room) return;
 
 	Room->ExitUser(ChatComponent);
@@ -228,10 +228,10 @@ void URoomComponent::ClientExitRoom_Implementation(const FString& RoomId)
 
 void URoomComponent::ServerEditRoomSettings_Implementation(const FString& RoomId, const FChatRoomSettings& Settings)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!ChatComponent) return;
 
-	auto* Room = ChatServerComponent->GetRoom(RoomId);
+	auto* Room = ChatSubsystem->GetRoom(RoomId);
 	if (!Room) return;
 
 	Room->SetRoomSettings(Settings);

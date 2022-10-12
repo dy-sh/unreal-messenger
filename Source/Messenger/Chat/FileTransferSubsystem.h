@@ -3,30 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "Messenger/Chat/ChatTypes.h"
-#include "FileTransferServerComponent.generated.h"
+#include "ChatTypes.h"
+#include "UObject/Object.h"
+#include "FileTransferSubsystem.generated.h"
 
 class UConnectionBase;
 class UConnectionHandler;
 class UConnectionTcpServer;
-class UChatServerComponent;
+class UChatSubsystem;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class MESSENGER_API UFileTransferServerComponent : public UActorComponent
+UCLASS()
+class MESSENGER_API UFileTransferSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="FileTransferServerComponent")
-	int32 ServerPort = 3000;
+	UFUNCTION(BlueprintCallable, Category="FileTransferSubsystem")
+	void StartServer(const int32 Port = 3000);
 
-	virtual void BeginPlay() override;
-
-	UFUNCTION(BlueprintCallable, Category="FileTransferServerComponent")
-	void StartServer();
-
-	UFUNCTION(BlueprintCallable, Category="FileTransferServerComponent")
+	UFUNCTION(BlueprintCallable, Category="FileTransferSubsystem")
 	void StopServer();
 
 	UFUNCTION()
@@ -38,14 +33,24 @@ public:
 
 
 	void SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, bool SendEncrypted);
-	
+
 	FString GetNotExistFileName(const FString& FilePath) const;
-	
+
 	UConnectionHandler* GetConnectionHandler() const { return ConnectionHandler; }
-	
+
+	UFUNCTION(BlueprintPure, Category="FileTransferSubsystem")
+	int32 GetServerPort() const { return ServerPort; }
+
+
+	UFUNCTION(BlueprintPure, Category="FileTransferSubsystem")
+	bool IsServerStarted() const { return ConnectionHandler != nullptr; }
+
+
 protected:
+	int32 ServerPort = 3000;
+
 	UPROPERTY()
-	UChatServerComponent* ChatServerComponent;
+	UChatSubsystem* ChatSubsystem;
 
 	UPROPERTY()
 	UConnectionHandler* ConnectionHandler;
@@ -61,4 +66,3 @@ protected:
 
 	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
 };
-

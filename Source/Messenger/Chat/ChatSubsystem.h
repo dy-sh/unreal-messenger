@@ -3,19 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Messenger/Chat/ChatTypes.h"
-#include "ChatServerComponent.generated.h"
+#include "ChatTypes.h"
+#include "UObject/Object.h"
+#include "ChatSubsystem.generated.h"
 
 class UChatComponent;
 class UAuthorizationComponent;
 class UChatRoom;
 class UChatUser;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class MESSENGER_API UChatServerComponent : public UActorComponent
+UCLASS()
+class MESSENGER_API UChatSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	bool CreateRoom(const FChatRoomSettings& Settings, FString& RoomId);

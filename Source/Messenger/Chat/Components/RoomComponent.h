@@ -7,7 +7,7 @@
 #include "Messenger/Chat/ChatTypes.h"
 #include "RoomComponent.generated.h"
 
-class UChatServerComponent;
+class UChatSubsystem;
 class UAuthorizationComponent;
 class UChatComponent;
 
@@ -107,7 +107,7 @@ private:
 	UPROPERTY()
 	UAuthorizationComponent* AuthorizationComponent;
 	UPROPERTY()
-	UChatServerComponent* ChatServerComponent;
+	UChatSubsystem* ChatSubsystem;
 	FString ActiveRoomId;
 	FChatRoomSettings ActiveRoomSettings;
 };

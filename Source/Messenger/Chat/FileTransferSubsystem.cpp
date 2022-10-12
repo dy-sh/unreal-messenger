@@ -1,42 +1,32 @@
 ﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
-#include "FileTransferServerComponent.h"
 
-#include "ChatComponent.h"
-#include "ChatServerComponent.h"
+#include "FileTransferSubsystem.h"
+
+#include "ChatSubsystem.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
-#include "FileUtilsLibrary.h"
-#include "Messenger/Chat/ChatTypes.h"
-#include "GameFramework/GameModeBase.h"
-#include "Messenger/Authorization/AuthorizationComponent.h"
-#include "Messenger/Chat/Protocol/DownloadFileRequest.h"
-#include "Messenger/Chat/Protocol/DownloadFileResponse.h"
-#include "Messenger/Chat/Protocol/UploadFileRequest.h"
-#include "Messenger/Chat/Room/ChatRoom.h"
+#include "Components/ChatComponent.h"
+#include "Protocol/ClientServerMessage.h"
+#include "Protocol/DownloadFileRequest.h"
+#include "Protocol/DownloadFileResponse.h"
+#include "Protocol/UploadFileRequest.h"
+#include "Room/ChatRoom.h"
 
 
-void UFileTransferServerComponent::BeginPlay()
+void UFileTransferSubsystem::StartServer(const int32 Port)
 {
-	Super::BeginPlay();
+	checkf(GetWorld()->GetAuthGameMode(), TEXT("Call StartServer only on the server"));
 
-	if (!GetWorld()) return;
-
-	StartServer();
-
-	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
-	{
-		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
-	}
-}
-
-
-void UFileTransferServerComponent::StartServer()
-{
 	if (ConnectionHandler)
 	{
 		StopServer();
 	}
+
+	ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>();
+	check(ChatSubsystem);
+
+	ServerPort = Port;
 
 	Server = NewObject<UConnectionTcpServer>();
 	Server->Initialize(ServerPort);
@@ -49,7 +39,7 @@ void UFileTransferServerComponent::StartServer()
 }
 
 
-void UFileTransferServerComponent::StopServer()
+void UFileTransferSubsystem::StopServer()
 {
 	if (ConnectionHandler)
 	{
@@ -62,20 +52,20 @@ void UFileTransferServerComponent::StopServer()
 }
 
 
-void UFileTransferServerComponent::OnConnected(UConnectionBase* Connection)
+void UFileTransferSubsystem::OnConnected(UConnectionBase* Connection)
 {
 }
 
 
-void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
+void UFileTransferSubsystem::OnDisconnected(UConnectionBase* Connection)
 {
 }
 
 
-void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
+void UFileTransferSubsystem::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
 	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
-	
+
 	EClientServerMessageType MessType = ParseMessageType(ByteArray);
 	switch (MessType)
 	{
@@ -83,13 +73,12 @@ void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, c
 			break;
 		case EClientServerMessageType::DownloadFileRequest: ReceiveDownloadFileRequest(Connection, ByteArray);
 			break;
-		default:
-			break;
+		default: break;
 	}
 }
 
 
-EClientServerMessageType UFileTransferServerComponent::ParseMessageType(const TArray<uint8>& ByteArray) const
+EClientServerMessageType UFileTransferSubsystem::ParseMessageType(const TArray<uint8>& ByteArray) const
 {
 	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
 	int32 MessageType;
@@ -99,7 +88,7 @@ EClientServerMessageType UFileTransferServerComponent::ParseMessageType(const TA
 }
 
 
-void UFileTransferServerComponent::ReceiveUploadFileRequest(const TArray<uint8>& ByteArray)
+void UFileTransferSubsystem::ReceiveUploadFileRequest(const TArray<uint8>& ByteArray)
 {
 	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
 
@@ -132,11 +121,11 @@ void UFileTransferServerComponent::ReceiveUploadFileRequest(const TArray<uint8>&
 }
 
 
-void UFileTransferServerComponent::ReceiveDownloadFileRequest(UConnectionBase* Connection, const TArray<uint8> ByteArray)
+void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connection, const TArray<uint8> ByteArray)
 {
 	FDownloadFileRequestPayload Request = UDownloadFileRequest::ParseDownloadFileRequestPayload(ByteArray);
 
-	auto* Room = ChatServerComponent->GetRoom(Request.RoomId);
+	auto* Room = ChatSubsystem->GetRoom(Request.RoomId);
 	if (!Room) return; // todo: send bad request
 
 	FTransferredFileInfo FileInfo;
@@ -168,11 +157,11 @@ void UFileTransferServerComponent::ReceiveDownloadFileRequest(UConnectionBase* C
 }
 
 
-void UFileTransferServerComponent::SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, const bool SendEncrypted)
+void UFileTransferSubsystem::SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, const bool SendEncrypted)
 {
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 
-	auto* Room = ChatServerComponent->GetRoom(FileInfo.RoomId);
+	auto* Room = ChatSubsystem->GetRoom(FileInfo.RoomId);
 	if (!Room) return;
 
 	Room->AddFileInfo(FileInfo);
@@ -206,7 +195,7 @@ void UFileTransferServerComponent::SendFileInfoToAllUsersInRoom(FTransferredFile
 }
 
 
-FString UFileTransferServerComponent::GetNotExistFileName(const FString& FilePath) const
+FString UFileTransferSubsystem::GetNotExistFileName(const FString& FilePath) const
 {
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 

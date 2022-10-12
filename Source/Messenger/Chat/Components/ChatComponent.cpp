@@ -2,11 +2,12 @@
 
 #include "ChatComponent.h"
 
-#include "ChatServerComponent.h"
+
 #include "FileTransferComponent.h"
 #include "RoomComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
+#include "Messenger/Chat/ChatSubsystem.h"
 #include "OpenSSLEncryption/OpenSSLEncryptionLibrary.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 #include "Messenger/Chat/User/ChatUser.h"
@@ -28,9 +29,9 @@ void UChatComponent::BeginPlay()
 	if (!GetWorld()) return;
 	if (!GetOwner()) return;
 
-	if (const auto* GameMode = GetWorld()->GetAuthGameMode())
+	if (GetOwner()->HasAuthority())
 	{
-		ChatServerComponent = GameMode->FindComponentByClass<UChatServerComponent>();
+		ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>();
 	}
 
 	AuthorizationComponent = GetOwner()->FindComponentByClass<UAuthorizationComponent>();
@@ -56,9 +57,9 @@ void UChatComponent::OnAuthorizationComplete(const EAuthorizationState State, co
 {
 	if (State == EAuthorizationState::Authorized)
 	{
-		if (ChatServerComponent) // has authority
+		if (ChatSubsystem) // has authority
 		{
-			ChatUser = ChatServerComponent->AddUser(this, AuthorizationComponent);
+			ChatUser = ChatSubsystem->AddUser(this, AuthorizationComponent);
 			ClientSetUserInfo(ChatUser->Info, ChatUser->PrivateInfo);
 		}
 	}
@@ -189,11 +190,11 @@ void UChatComponent::ServerChangeUserName_Implementation(const FString& NewName)
 void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool SendEncrypted)
 {
 	if (!ChatUser) return;
-	if (!ChatServerComponent) return;
+	if (!ChatSubsystem) return;
 	if (!AuthorizationComponent) return;
 	if (!RoomComponent) return;
 
-	auto* Room = ChatServerComponent->GetRoom(RoomComponent->GetActiveRoomId());
+	auto* Room = ChatSubsystem->GetRoom(RoomComponent->GetActiveRoomId());
 	if (!Room) return;
 
 	FChatMessage Message;

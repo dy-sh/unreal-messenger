@@ -8,7 +8,7 @@
 #include "Messenger/Chat/User/ChatUser.h"
 #include "ChatComponent.generated.h"
 
-class UChatServerComponent;
+class UChatSubsystem;
 class UAuthorizationComponent;
 class UChatUser;
 class URoomComponent;
@@ -97,7 +97,7 @@ private:
 	UPROPERTY()
 	UAuthorizationComponent* AuthorizationComponent;
 	UPROPERTY()
-	UChatServerComponent* ChatServerComponent;
+	UChatSubsystem* ChatSubsystem;
 	UPROPERTY()
 	URoomComponent* RoomComponent;
 	UPROPERTY()
