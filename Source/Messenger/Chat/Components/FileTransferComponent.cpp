@@ -281,19 +281,22 @@ void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8>& By
 {
 	const FDownloadFileResponsePayload Response = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
 
-	// save file
-	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	ProceedingFileInfo.FilePath = SavedPath + Response.FileName;
-	ProceedingFileInfo.FilePath = GetNotExistFileName(ProceedingFileInfo.FilePath);
-	ProceedingFileInfo.FileName = Response.FileName;
-
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-	if (!FFileHelper::SaveArrayToFile(Response.FileContent, *ProceedingFileInfo.FilePath))
+	if (Response.bSuccess)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *ProceedingFileInfo.FilePath);
+		// save file
+		const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+		ProceedingFileInfo.FilePath = SavedPath + Response.FileName;
+		ProceedingFileInfo.FilePath = GetNotExistFileName(ProceedingFileInfo.FilePath);
+		ProceedingFileInfo.FileName = Response.FileName;
 
-		ProceedingFileInfo.State = ETransferringFileState::None;
-		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, false);
+		IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+		if (!FFileHelper::SaveArrayToFile(Response.FileContent, *ProceedingFileInfo.FilePath))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *ProceedingFileInfo.FilePath);
+
+			ProceedingFileInfo.State = ETransferringFileState::None;
+			OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, false);
+		}
 	}
 
 	ProceedingFileInfo.State = ETransferringFileState::Downloaded;
