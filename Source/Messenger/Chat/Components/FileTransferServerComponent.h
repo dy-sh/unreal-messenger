@@ -36,8 +36,7 @@ public:
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
 
-	void SendFileToClient(const FTransferredFileInfo& FileInfo);
-	
+
 	void SendFileInfoToAllUsersInRoom(FTransferredFileInfo FileInfo, bool SendEncrypted);
 	
 	FString GetNotExistFileName(const FString& FilePath) const;
@@ -56,5 +55,10 @@ protected:
 
 	FTimerHandle StartServerTimerHandle;
 
-	void ReceiveUploadedFile(const TArray<uint8>& ByteArray);
+	void ReceiveUploadFileRequest(const TArray<uint8>& ByteArray);
+
+	void ReceiveDownloadFileRequest(UConnectionBase* Connection, const TArray<uint8> ByteArray);
+
+	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
 };
+

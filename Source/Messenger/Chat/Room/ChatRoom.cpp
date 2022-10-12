@@ -25,8 +25,6 @@ TArray<FChatMessage> UChatRoom::GetLastMessages(const int32 Number)
 }
 
 
-
-
 TArray<FTransferredFileInfo> UChatRoom::GetLastFileInfos(const int32 Number)
 {
 	TArray<FTransferredFileInfo> LastFiles;
@@ -43,6 +41,20 @@ TArray<FTransferredFileInfo> UChatRoom::GetLastFileInfos(const int32 Number)
 	}
 
 	return LastFiles;
+}
+
+
+bool UChatRoom::GetFileInfo(const FString& FileId, FTransferredFileInfo& FileInfo)
+{
+	for (const auto Info : FileInfos)
+	{
+		if (Info.FileId == FileId)
+		{
+			FileInfo = Info;
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -75,7 +87,7 @@ TArray<UChatComponent*> UChatRoom::GetActiveChatComponentsOfUser(FString UserId)
 	TArray<UChatComponent*> Components;
 	for (auto* Comp : ActiveChatComponents)
 	{
-		if (Comp->GetUserInfo().UserID==UserId)
+		if (Comp->GetUserInfo().UserID == UserId)
 		{
 			Components.Add(Comp);
 		}

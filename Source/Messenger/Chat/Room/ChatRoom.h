@@ -43,6 +43,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<FTransferredFileInfo> GetLastFileInfos(const int32 Number);
 
+	UFUNCTION(BlueprintPure)
+	bool GetFileInfo(const FString& FileId, FTransferredFileInfo& FileInfo);
+
 
 	UFUNCTION(BlueprintCallable)
 	void JoinUser(const FString& UserId);

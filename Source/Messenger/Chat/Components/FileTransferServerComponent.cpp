@@ -10,6 +10,8 @@
 #include "Messenger/Chat/ChatTypes.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
+#include "Messenger/Chat/Protocol/DownloadFileRequest.h"
+#include "Messenger/Chat/Protocol/DownloadFileResponse.h"
 #include "Messenger/Chat/Protocol/UploadFileRequest.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 
@@ -73,13 +75,30 @@ void UFileTransferServerComponent::OnDisconnected(UConnectionBase* Connection)
 void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
 	// todo send data package for requesting downloading file to client
-	
-	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
 
-	ReceiveUploadedFile(ByteArray);
+	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
+	EClientServerMessageType MessType = ParseMessageType(ByteArray);
+	switch (MessType)
+	{
+		case EClientServerMessageType::UploadFileRequest: ReceiveUploadFileRequest(ByteArray);
+			break;
+		case EClientServerMessageType::DownloadFileRequest: ReceiveDownloadFileRequest(Connection, ByteArray);
+			break;
+	}
 }
 
-void UFileTransferServerComponent::ReceiveUploadedFile(const TArray<uint8>& ByteArray)
+
+EClientServerMessageType UFileTransferServerComponent::ParseMessageType(const TArray<uint8>& ByteArray) const
+{
+	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
+	int32 MessageType;
+	int32 Offset = 0;
+	UClientServerMessage::ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	return (EClientServerMessageType) MessageType;
+}
+
+
+void UFileTransferServerComponent::ReceiveUploadFileRequest(const TArray<uint8>& ByteArray)
 {
 	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
 
@@ -91,6 +110,7 @@ void UFileTransferServerComponent::ReceiveUploadedFile(const TArray<uint8>& Byte
 	if (!FFileHelper::SaveArrayToFile(ReceivedFile.FileContent, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+		return; // todo: send bad request
 	}
 
 	UE_LOG(LogTemp, Warning, L"RoomId: %s", *ReceivedFile.RoomId);
@@ -106,14 +126,44 @@ void UFileTransferServerComponent::ReceiveUploadedFile(const TArray<uint8>& Byte
 	FileInfo.FileName = ReceivedFile.FileName;
 	FileInfo.SavedFileName = FilePath;
 	FileInfo.Date = FDateTime::Now();
-	
-	SendFileInfoToAllUsersInRoom(FileInfo,false);
+
+	SendFileInfoToAllUsersInRoom(FileInfo, false);
 }
 
 
-void UFileTransferServerComponent::SendFileToClient(const FTransferredFileInfo& FileInfo)
+void UFileTransferServerComponent::ReceiveDownloadFileRequest(UConnectionBase* Connection, const TArray<uint8> ByteArray)
 {
-	
+	FDownloadFileRequestPayload Request = UDownloadFileRequest::ParseDownloadFileRequestPayload(ByteArray);
+
+	auto* Room = ChatServerComponent->GetRoom(Request.RoomId);
+	if (!Room) return; // todo: send bad request
+
+	FTransferredFileInfo FileInfo;
+	if (!Room->GetFileInfo(Request.FileId, FileInfo)) return; // todo: send bad request
+
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FileManager.FileExists(*FileInfo.SavedFileName))
+	{
+		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FileInfo.SavedFileName);
+		return; // todo: send bad request
+	}
+
+	FDownloadFileResponsePayload FileToSend;
+
+	if (!FFileHelper::LoadFileToArray(FileToSend.FileContent, *FileInfo.SavedFileName))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file %s"), *FileInfo.SavedFileName);
+		return; // todo: send bad request
+	}
+
+	FileToSend.FileName = FileInfo.FileName;
+	FileToSend.RoomId = FileInfo.RoomId;
+	FileToSend.UserId = FileInfo.UserId;
+	FileToSend.FileId = FileInfo.FileId;
+
+	const auto* Message = UDownloadFileResponse::CreateDownloadFileResponse(FileToSend);
+	Connection->Send(Message->GetByteArray());
 }
 
 
@@ -153,8 +203,6 @@ void UFileTransferServerComponent::SendFileInfoToAllUsersInRoom(FTransferredFile
 		}
 	}
 }
-
-
 
 
 FString UFileTransferServerComponent::GetNotExistFileName(const FString& FilePath) const

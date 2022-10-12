@@ -8,6 +8,7 @@
 UENUM()
 enum class EClientServerMessageType:int8
 {
+	Unknown,
 	UploadFileRequest,
 	DownloadFileRequest,
 	DownloadFileResponse,

@@ -142,16 +142,11 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 
 	if (State == EFileTransferringState::SendingFile)
 	{
-		// if (FileToSend.FileContent.Num() == 0)
-		// {
-		// 	CloseConnection();
-		// 	return;
-		// }
-
 		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(FileToSend);
 		ConnectionHandler->Send(Message->GetByteArray());
 		// FileToSend = FFileDataPackageInfo{};
 		// CloseConnection();
+		State = EFileTransferringState::None;
 	}
 	else if (State == EFileTransferringState::DownloadingFile)
 	{
@@ -161,11 +156,14 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 		Payload.UserId = ChatComponent->GetUserInfo().UserID;
 		const auto* Message = UDownloadFileRequest::CreateDownloadFileRequest(Payload);
 		ConnectionHandler->Send(Message->GetByteArray());
+		State = EFileTransferringState::None;
 	}
 	else
 	{
 		CloseConnection();
 	}
+
+	
 }
 
 
