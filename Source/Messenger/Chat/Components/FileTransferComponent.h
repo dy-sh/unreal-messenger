@@ -75,4 +75,10 @@ protected:
 	void OnDisconnected(UConnectionBase* Connection);
 	UFUNCTION()
 	void OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray);
+
+	EClientServerMessageType ParseMessageType(const TArray<uint8>& ByteArray) const;
+	
+	void ReceiveDownloadFileResponse(const TArray<uint8> ByteArray);
+	FString GetNotExistFileName(const FString& FilePath) const;
 };
+

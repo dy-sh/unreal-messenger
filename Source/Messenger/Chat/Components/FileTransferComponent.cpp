@@ -174,6 +174,75 @@ void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
+	EClientServerMessageType MessType = ParseMessageType(ByteArray);
+	switch (MessType)
+	{
+		case EClientServerMessageType::DownloadFileResponse: ReceiveDownloadFileResponse(ByteArray);
+		break;
+		default:
+			break;
+	}
 }
 
 
+EClientServerMessageType UFileTransferComponent::ParseMessageType(const TArray<uint8>& ByteArray) const
+{
+	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
+	int32 MessageType;
+	int32 Offset = 0;
+	UClientServerMessage::ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	return (EClientServerMessageType) MessageType;
+}
+
+
+void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> ByteArray)
+{
+	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
+
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
+	FString FilePath = SavedPath + ReceivedFile.FileName;
+	FilePath = GetNotExistFileName(FilePath);
+
+	if (!FFileHelper::SaveArrayToFile(ReceivedFile.FileContent, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to save file %s"), *FilePath);
+		return; // todo: send bad request
+	}
+
+	UE_LOG(LogTemp, Warning, L"RoomId: %s", *ReceivedFile.RoomId);
+	UE_LOG(LogTemp, Warning, L"UserId: %s", *ReceivedFile.UserId);
+	UE_LOG(LogTemp, Warning, L"FileName: %s", *ReceivedFile.FileName);
+	UE_LOG(LogTemp, Warning, L"FileSize: %i", ReceivedFile.FileContent.Num());
+
+	FTransferredFileInfo FileInfo;
+	FileInfo.RoomId = ReceivedFile.RoomId;
+	FileInfo.UserId = ReceivedFile.UserId;
+	FileInfo.UserName = "User";
+	FileInfo.FileId = FGuid::NewGuid().ToString();
+	FileInfo.FileName = ReceivedFile.FileName;
+	FileInfo.SavedFileName = FilePath;
+	FileInfo.Date = FDateTime::Now();
+}
+
+
+FString UFileTransferComponent::GetNotExistFileName(const FString& FilePath) const
+{
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (!FileManager.FileExists(*FilePath)) return FilePath;
+
+	for (int32 i = 1; i < 99999; ++i)
+	{
+		FString NewFilePath = FPaths::Combine(
+			*FPaths::GetPath(FilePath),
+			FString::Printf(TEXT("%s(%i).%s"),
+				*FPaths::GetBaseFilename(FilePath), i, *FPaths::GetExtension(FilePath)));
+		if (!FileManager.FileExists(*NewFilePath))
+		{
+			return NewFilePath;
+		}
+	}
+
+	return FString{};
+}
