@@ -58,9 +58,9 @@ void UClientServerMessage::WritePayload(const FString& Payload, TArray<uint8>& D
 
 void UClientServerMessage::ReadPayload(const TArray<uint8>& Data, FString& Payload, int32& Offset)
 {
-	TArray<uint8> FileNameByteArray;
-	ReadPayload(Data, FileNameByteArray, Offset);
-	Payload = UNetworkUtils::ByteArrayToString(Data);
+	TArray<uint8> ByteArray;
+	ReadPayload(Data, ByteArray, Offset);
+	Payload = UNetworkUtils::ByteArrayToString(ByteArray);
 }
 
 
