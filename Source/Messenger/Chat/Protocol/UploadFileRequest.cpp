@@ -5,10 +5,19 @@
 #include "NetworkUtils.h"
 
 
-UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const FFileDataPackageInfo& FileInfo)
+UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const int32 MessageId, const FFileDataPackageInfo& FileInfo)
 {
 	auto* Obj = NewObject<UUploadFileRequest>();
+	Obj->InitializeByPayload(MessageId, FileInfo);
 	return Obj;
+}
+
+
+const FFileDataPackageInfo& UUploadFileRequest::ParseByteArrayToFileRequestPayload(const TArray<uint8>& ByteArray)
+{
+	auto* Obj = NewObject<UUploadFileRequest>();
+	Obj->InitializeByByteArray(ByteArray);
+	return Obj->GetPayload();
 }
 
 

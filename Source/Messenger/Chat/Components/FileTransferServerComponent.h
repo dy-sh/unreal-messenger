@@ -55,4 +55,6 @@ protected:
 	UConnectionTcpServer* Server;
 
 	FTimerHandle StartServerTimerHandle;
+
+	void ReceiveUploadedFile(const TArray<uint8>& ByteArray);
 };

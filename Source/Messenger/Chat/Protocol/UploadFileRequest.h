@@ -11,11 +11,17 @@ USTRUCT(BlueprintType)
 struct FFileDataPackageInfo
 {
 	GENERATED_BODY()
-	;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString RoomId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString UserId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString FileName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<uint8> FileContent;
 };
 
@@ -26,8 +32,11 @@ class MESSENGER_API UUploadFileRequest : public UClientServerMessage
 
 public:
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	virtual UUploadFileRequest* CreateUploadFileRequest(const FFileDataPackageInfo& FileInfo);
+	static UUploadFileRequest* CreateUploadFileRequest(const int32 MessageId, const FFileDataPackageInfo& FileInfo);
 
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	static const FFileDataPackageInfo& ParseByteArrayToFileRequestPayload(const TArray<uint8>& ByteArray);
+	
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	void InitializeByPayload(const int32 MessageId, const FFileDataPackageInfo& FileInfo);
 

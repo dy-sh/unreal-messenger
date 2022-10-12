@@ -16,6 +16,7 @@ UFileTransferComponent::UFileTransferComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+
 void UFileTransferComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -35,7 +36,6 @@ void UFileTransferComponent::BeginPlay()
 		OnlineSessionsSubsystem = GameInstance->GetSubsystem<UOnlineSessionsSubsystem>();
 	}
 }
-
 
 
 bool UFileTransferComponent::ConnectToServer(const FString& IpAddress, const int32 Port)
@@ -63,7 +63,7 @@ bool UFileTransferComponent::ConnectToServer(const FString& IpAddress, const int
 void UFileTransferComponent::CloseConnection()
 {
 	State = EFileTransferringState::None;
-	
+
 	if (ConnectionHandler)
 	{
 		ConnectionHandler->Close();
@@ -144,9 +144,8 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 		// 	return;
 		// }
 
-		TArray<uint8> Package;
-		// FileDataPackage::FileToDataPackage(FileToSend, Package);
-		ConnectionHandler->Send(Package);
+		const auto* Message = UUploadFileRequest::CreateUploadFileRequest(1, FileToSend);
+		ConnectionHandler->Send(Message->GetByteArray());
 		// FileToSend = FFileDataPackageInfo{};
 		// CloseConnection();
 	}
@@ -169,6 +168,7 @@ void UFileTransferComponent::OnDisconnected(UConnectionBase* Connection)
 void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const TArray<uint8>& ByteArray)
 {
 }
+
 
 void UFileTransferComponent::ServerGetFile_Implementation(const FTransferredFileInfo& FileInfo)
 {
