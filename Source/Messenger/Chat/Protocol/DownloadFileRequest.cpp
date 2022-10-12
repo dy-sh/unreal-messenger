@@ -2,8 +2,6 @@
 
 
 #include "DownloadFileRequest.h"
-
-#include "NetworkUtils.h"
 #include "Messenger/Chat/ChatTypes.h"
 
 
@@ -25,48 +23,33 @@ const FDownloadFileRequestPayload& UDownloadFileRequest::ParseDownloadFileReques
 
 void UDownloadFileRequest::InitializeByPayload(const FDownloadFileRequestPayload& FileInfo)
 {
-	MessType = (int32) EClientServerMessageType::DownloadFileRequest;
+	MessType = (uint8) EClientServerMessageType::DownloadFileRequest;
 	PayloadData = FileInfo;
 
-	TArray<uint8> RoomIdByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.RoomId, RoomIdByteArray);
-
-	TArray<uint8> UserIdByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.UserId, UserIdByteArray);
-
-	TArray<uint8> FileIdByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.FileId, FileIdByteArray);
-
 	const int32 Length =
-		1 + //MessageType
-		BYTE_ARRAY_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + FileIdByteArray.Num();
+		CalculatePayloadSize(MessType) +
+		CalculatePayloadSize(FileInfo.RoomId) +
+		CalculatePayloadSize(FileInfo.UserId) +
+		CalculatePayloadSize(FileInfo.FileId);
 
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
 	WritePayload(MessType, DataByteArray, Offset);
-	WritePayload(RoomIdByteArray, DataByteArray, Offset);
-	WritePayload(UserIdByteArray, DataByteArray, Offset);
-	WritePayload(FileIdByteArray, DataByteArray, Offset);
+	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
+	WritePayload(FileInfo.UserId, DataByteArray, Offset);
+	WritePayload(FileInfo.FileId, DataByteArray, Offset);
 }
 
 
 void UDownloadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 {
-	int32 MessageType;
-	TArray<uint8> RoomIdByteArray;
-	TArray<uint8> UserIdByteArray;
-	TArray<uint8> FileIdByteArray;
+	uint8 MessageType;
 
 	int32 Offset = 0;
 	ReadPayload(ByteArray, MessageType, Offset);
-	ReadPayload(ByteArray, RoomIdByteArray, Offset);
-	ReadPayload(ByteArray, UserIdByteArray, Offset);
-	ReadPayload(ByteArray, FileIdByteArray, Offset);
-
-	PayloadData.RoomId = UNetworkUtils::ByteArrayToString(RoomIdByteArray);
-	PayloadData.UserId = UNetworkUtils::ByteArrayToString(UserIdByteArray);
-	PayloadData.FileId = UNetworkUtils::ByteArrayToString(FileIdByteArray);
+	checkf(MessageType==MessType, TEXT("Failed to deserialize message. Wrong message type!"));
+	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
+	ReadPayload(ByteArray, PayloadData.UserId, Offset);
+	ReadPayload(ByteArray, PayloadData.FileId, Offset);
 }

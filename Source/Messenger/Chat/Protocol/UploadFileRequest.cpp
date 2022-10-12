@@ -2,7 +2,6 @@
 
 
 #include "UploadFileRequest.h"
-#include "NetworkUtils.h"
 #include "Messenger/Chat/ChatTypes.h"
 
 
@@ -24,59 +23,41 @@ const FUploadFileRequestPayload& UUploadFileRequest::ParseUploadFileRequestPaylo
 
 void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& FileInfo)
 {
-	MessType = (int32) EClientServerMessageType::UploadFileRequest;
+	MessType = (uint8) EClientServerMessageType::UploadFileRequest;
 	PayloadData = FileInfo;
 
-	TArray<uint8> RoomIdByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.RoomId, RoomIdByteArray);
-
-	TArray<uint8> UserIdByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.UserId, UserIdByteArray);
-
-	TArray<uint8> UserNameByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.UserName, UserNameByteArray); 
-
-	TArray<uint8> FileNameByteArray;
-	UNetworkUtils::StringToByteArray(FileInfo.FileName, FileNameByteArray);
+	//todo: dont send user name
 
 	const int32 Length =
-		1 + //MessageType
-		BYTE_ARRAY_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + UserNameByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
-		BYTE_ARRAY_SIZE_BIT_DEPTH + FileInfo.FileContent.Num();
+		CalculatePayloadSize(MessType)+
+		CalculatePayloadSize(FileInfo.RoomId) +
+		CalculatePayloadSize(FileInfo.UserId) +
+		CalculatePayloadSize(FileInfo.UserName) +
+		CalculatePayloadSize(FileInfo.FileName) +
+		CalculatePayloadSize(FileInfo.FileContent);
 
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
 	WritePayload(MessType, DataByteArray, Offset);
-	WritePayload(RoomIdByteArray, DataByteArray, Offset);
-	WritePayload(UserIdByteArray, DataByteArray, Offset);
-	WritePayload(UserNameByteArray, DataByteArray, Offset);
-	WritePayload(FileNameByteArray, DataByteArray, Offset);
+	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
+	WritePayload(FileInfo.UserId, DataByteArray, Offset);
+	WritePayload(FileInfo.UserName, DataByteArray, Offset);
+	WritePayload(FileInfo.FileName, DataByteArray, Offset);
 	WritePayload(FileInfo.FileContent, DataByteArray, Offset);
 }
 
 
 void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 {
-	int32 MessageType;
-	TArray<uint8> RoomIdByteArray;
-	TArray<uint8> UserIdByteArray;
-	TArray<uint8> UserNameByteArray;
-	TArray<uint8> FileNameByteArray;
-
+	uint8 MessageType;	
+	
 	int32 Offset = 0;
 	ReadPayload(ByteArray, MessageType, Offset);
-	ReadPayload(ByteArray, RoomIdByteArray, Offset);
-	ReadPayload(ByteArray, UserIdByteArray, Offset);
-	ReadPayload(ByteArray, UserNameByteArray, Offset);
-	ReadPayload(ByteArray, FileNameByteArray, Offset);
+	checkf(MessageType==MessType, TEXT("Failed to deserialize message. Wrong message type!"));
+	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
+	ReadPayload(ByteArray, PayloadData.UserId, Offset);
+	ReadPayload(ByteArray, PayloadData.UserName, Offset);
+	ReadPayload(ByteArray, PayloadData.FileName, Offset);
 	ReadPayload(ByteArray, PayloadData.FileContent, Offset);
-
-	PayloadData.RoomId = UNetworkUtils::ByteArrayToString(RoomIdByteArray);
-	PayloadData.UserId = UNetworkUtils::ByteArrayToString(UserIdByteArray);
-	PayloadData.UserName = UNetworkUtils::ByteArrayToString(UserNameByteArray);
-	PayloadData.FileName = UNetworkUtils::ByteArrayToString(FileNameByteArray);
 }

@@ -21,17 +21,27 @@ public:
 	uint8 GetMessageType() const { return MessType; }
 
 
+	static int32 CalculatePayloadSize(const TArray<uint8>& Payload);
 	static void WritePayload(const TArray<uint8>& Payload, TArray<uint8>& Data, int32& Offset);
 	static void ReadPayload(const TArray<uint8>& Data, TArray<uint8>& Payload, int32& Offset);
-	static void WritePayload(const int32 Payload, TArray<uint8>& Data, int32& Offset);
-	static void ReadPayload(const TArray<uint8>& Data, int32& Payload, int32& Offset);
-	static void WritePayload(const bool Payload, TArray<uint8>& Data, int32& Offset);
-	static void ReadPayload(const TArray<uint8>& Data, bool& Payload, int32& Offset);
-	static void WritePayload(const uint8 Payload, TArray<uint8>& Data, int32& Offset);
-	static void ReadPayload(const TArray<uint8>& Data, uint8& Payload, int32& Offset);
+
+	static int32 CalculatePayloadSize(const FString& Payload);
 	static void WritePayload(const FString& Payload, TArray<uint8>& Data, int32& Offset);
 	static void ReadPayload(const TArray<uint8>& Data, FString& Payload, int32& Offset);
-	static int32 CalculatePayloadSize(const FString& Payload);
+	
+	static int32 CalculatePayloadSize(const bool Payload);
+	static void WritePayload(const bool Payload, TArray<uint8>& Data, int32& Offset);
+	static void ReadPayload(const TArray<uint8>& Data, bool& Payload, int32& Offset);
+	
+	static int32 CalculatePayloadSize(const uint8 Payload);
+	static void WritePayload(const uint8 Payload, TArray<uint8>& Data, int32& Offset);
+	static void ReadPayload(const TArray<uint8>& Data, uint8& Payload, int32& Offset);
+
+	static int32 CalculatePayloadSize(const int32 Payload);
+	static void WritePayload(const int32 Payload, TArray<uint8>& Data, int32& Offset);
+	static void ReadPayload(const TArray<uint8>& Data, int32& Payload, int32& Offset);
+	
+
 protected:
 	uint8 MessType{0};
 	TArray<uint8> DataByteArray;

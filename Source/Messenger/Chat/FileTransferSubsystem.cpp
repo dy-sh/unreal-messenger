@@ -82,9 +82,9 @@ void UFileTransferSubsystem::OnReceivedData(UConnectionBase* Connection, const T
 EClientServerMessageType UFileTransferSubsystem::ParseMessageType(const TArray<uint8>& ByteArray) const
 {
 	if (ByteArray.Num() < 1) return EClientServerMessageType::Unknown;
-	int32 MessageType;
+	uint8 MessageType;
 	int32 Offset = 0;
-	UClientServerMessage::ReadPayloadFromDataByteArray(BYTE_ARRAY_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	UClientServerMessage::ReadPayload(ByteArray, MessageType, Offset);
 	return (EClientServerMessageType) MessageType;
 }
 
