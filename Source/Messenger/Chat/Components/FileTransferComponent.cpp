@@ -50,6 +50,7 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 {
 	if (!ChatComponent) return false;
 	if (!ChatComponent->GetRoomComponent()) return false;
+	if (!GetOwner()) return false;
 	if (ProceedingFileInfo.State == ETransferringFileState::Uploading
 	    || ProceedingFileInfo.State == ETransferringFileState::Downloading)
 		return false;
@@ -83,9 +84,19 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 
 void UFileTransferComponent::ServerRequestUploadingFile_Implementation()
 {
-	ProceedingFileInfo.State = ETransferringFileState::Uploading;
 	ProceedingFileInfo.FileId = FGuid::NewGuid().ToString();
-	ClientResponseUploadingFile(ProceedingFileInfo.FileId);
+	
+	if (GetOwner()->HasAuthority())
+	{
+		
+		ProceedingFileInfo.State = ETransferringFileState::Uploaded;
+		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, true);
+	}else
+	{
+		ProceedingFileInfo.State = ETransferringFileState::Uploading;
+
+		ClientResponseUploadingFile(ProceedingFileInfo.FileId);
+	}
 }
 
 
