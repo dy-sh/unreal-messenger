@@ -9,6 +9,7 @@
 #include "FileTransferServerComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Chat/Protocol/DownloadFileRequest.h"
+#include "Messenger/Chat/Protocol/DownloadFileResponse.h"
 #include "OnlineSessions/OnlineSessionsSubsystem.h"
 
 
@@ -197,7 +198,7 @@ EClientServerMessageType UFileTransferComponent::ParseMessageType(const TArray<u
 
 void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> ByteArray)
 {
-	FUploadFileRequestPayload ReceivedFile = UUploadFileRequest::ParseUploadFileRequestPayload(ByteArray);
+	FDownloadFileResponsePayload ReceivedFile = UDownloadFileResponse::ParseDownloadFileResponsePayload(ByteArray);
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
@@ -214,15 +215,6 @@ void UFileTransferComponent::ReceiveDownloadFileResponse(const TArray<uint8> Byt
 	UE_LOG(LogTemp, Warning, L"UserId: %s", *ReceivedFile.UserId);
 	UE_LOG(LogTemp, Warning, L"FileName: %s", *ReceivedFile.FileName);
 	UE_LOG(LogTemp, Warning, L"FileSize: %i", ReceivedFile.FileContent.Num());
-
-	FTransferredFileInfo FileInfo;
-	FileInfo.RoomId = ReceivedFile.RoomId;
-	FileInfo.UserId = ReceivedFile.UserId;
-	FileInfo.UserName = "User";
-	FileInfo.FileId = FGuid::NewGuid().ToString();
-	FileInfo.FileName = ReceivedFile.FileName;
-	FileInfo.SavedFileName = FilePath;
-	FileInfo.Date = FDateTime::Now();
 }
 
 
