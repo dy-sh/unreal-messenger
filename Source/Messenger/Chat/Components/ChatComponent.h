@@ -74,9 +74,6 @@ public:
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void ClientReceiveFileInfo(const FTransferredFileInfo& FileInfo);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void ServerGetFile(const FTransferredFileInfo& FileInfo);
-
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void ServerChangeUserName(const FString& NewName);

@@ -2,8 +2,7 @@
 
 
 #include "FileInfoWidget.h"
-
-#include "Messenger/Chat/Components/ChatComponent.h"
+#include "Messenger/Chat/Components/FileTransferComponent.h"
 
 
 void UFileInfoWidget::ReceiveFile()
@@ -12,9 +11,9 @@ void UFileInfoWidget::ReceiveFile()
 
 	if (auto* PC =GetWorld()->GetFirstPlayerController() )
 	{
-		if (auto* ChatComponent = PC->FindComponentByClass<UChatComponent>())
+		if (auto* FileTransferComponent = PC->FindComponentByClass<UFileTransferComponent>())
 		{
-			ChatComponent->ServerGetFile(FileInfo);
+			FileTransferComponent->DownloadFileFromServer(FileInfo);
 		}
 	}
 }

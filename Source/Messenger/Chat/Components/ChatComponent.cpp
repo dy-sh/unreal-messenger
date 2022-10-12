@@ -184,13 +184,7 @@ void UChatComponent::ServerChangeUserName_Implementation(const FString& NewName)
 }
 
 
-void UChatComponent::ServerGetFile_Implementation(const FTransferredFileInfo& FileInfo)
-{
-	if (FileTransferComponent)
-	{
-		FileTransferComponent->ServerGetFile(FileInfo);
-	}
-}
+
 
 void UChatComponent::SendMessageToAllUsersInRoom(const FString& Text, const bool SendEncrypted)
 {

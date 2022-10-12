@@ -179,10 +179,3 @@ void UFileTransferComponent::OnReceivedData(UConnectionBase* Connection, const T
 }
 
 
-void UFileTransferComponent::ServerGetFile_Implementation(const FTransferredFileInfo& FileInfo)
-{
-	if (FileTransferServerComponent)
-	{
-		FileTransferServerComponent->SendFileToClient(FileInfo);
-	}
-}
