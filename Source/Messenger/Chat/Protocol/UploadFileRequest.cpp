@@ -23,13 +23,12 @@ const FUploadFileRequestPayload& UUploadFileRequest::ParseUploadFileRequestPaylo
 
 void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& FileInfo)
 {
-	MessType = (uint8) EClientServerMessageType::UploadFileRequest;
 	PayloadData = FileInfo;
 
 	//todo: dont send user name
 
 	const int32 Length =
-		CalculatePayloadSize(MessType)+
+		CalculatePayloadSize(GetMessageType())+
 		CalculatePayloadSize(FileInfo.RoomId) +
 		CalculatePayloadSize(FileInfo.UserId) +
 		CalculatePayloadSize(FileInfo.UserName) +
@@ -39,7 +38,7 @@ void UUploadFileRequest::InitializeByPayload(const FUploadFileRequestPayload& Fi
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayload(MessType, DataByteArray, Offset);
+	WritePayload(GetMessageType(), DataByteArray, Offset);
 	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
 	WritePayload(FileInfo.UserId, DataByteArray, Offset);
 	WritePayload(FileInfo.UserName, DataByteArray, Offset);
@@ -54,7 +53,7 @@ void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
 	
 	int32 Offset = 0;
 	ReadPayload(ByteArray, MessageType, Offset);
-	checkf(MessageType==MessType, TEXT("Failed to deserialize message. Wrong message type!"));
+	checkf(MessageType==GetMessageType(), TEXT("Failed to deserialize message. Wrong message type!"));
 	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
 	ReadPayload(ByteArray, PayloadData.UserId, Offset);
 	ReadPayload(ByteArray, PayloadData.UserName, Offset);

@@ -18,7 +18,7 @@ public:
 
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
-	uint8 GetMessageType() const { return MessType; }
+	virtual uint8 GetMessageType() const { return 0; }
 
 
 	static int32 CalculatePayloadSize(const TArray<uint8>& Payload);
@@ -43,6 +43,5 @@ public:
 	
 
 protected:
-	uint8 MessType{0};
 	TArray<uint8> DataByteArray;
 };

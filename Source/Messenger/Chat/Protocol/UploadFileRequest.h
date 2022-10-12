@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ClientServerMessage.h"
+#include "Messenger/Chat/ChatTypes.h"
 #include "UploadFileRequest.generated.h"
 
 
@@ -48,6 +49,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	const FUploadFileRequestPayload& GetPayload() const { return PayloadData; }
+
+	virtual uint8 GetMessageType() const override{return (uint8)EClientServerMessageType::UploadFileRequest;}
 
 protected:
 	FUploadFileRequestPayload PayloadData;

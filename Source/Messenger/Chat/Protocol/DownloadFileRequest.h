@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ClientServerMessage.h"
+#include "Messenger/Chat/ChatTypes.h"
 #include "DownloadFileRequest.generated.h"
 
 
@@ -42,6 +43,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
 	const FDownloadFileRequestPayload& GetPayload() const { return PayloadData; }
+
+	virtual uint8 GetMessageType() const override{return (uint8)EClientServerMessageType::DownloadFileRequest;}
 
 protected:
 	FDownloadFileRequestPayload PayloadData;

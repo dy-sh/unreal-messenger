@@ -23,11 +23,10 @@ const FDownloadFileResponsePayload& UDownloadFileResponse::ParseDownloadFileResp
 
 void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePayload& FileInfo)
 {
-	MessType = (uint8) EClientServerMessageType::DownloadFileResponse;
 	PayloadData = FileInfo;
 
 	const int32 Length =
-		CalculatePayloadSize(MessType) +
+		CalculatePayloadSize(GetMessageType()) +
 		CalculatePayloadSize(FileInfo.bSuccess) +
 		CalculatePayloadSize(FileInfo.RoomId) +
 		CalculatePayloadSize(FileInfo.UserId) +
@@ -38,7 +37,7 @@ void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePaylo
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayload(MessType, DataByteArray, Offset);
+	WritePayload(GetMessageType(), DataByteArray, Offset);
 	WritePayload(FileInfo.bSuccess, DataByteArray, Offset);
 	WritePayload(FileInfo.RoomId, DataByteArray, Offset);
 	WritePayload(FileInfo.UserId, DataByteArray, Offset);
@@ -54,7 +53,7 @@ void UDownloadFileResponse::InitializeByByteArray(const TArray<uint8>& ByteArray
 
 	int32 Offset = 0;
 	ReadPayload(ByteArray, MessageType, Offset);
-	checkf(MessageType==MessType, TEXT("Failed to deserialize message. Wrong message type!"));
+	checkf(MessageType==GetMessageType(), TEXT("Failed to deserialize message. Wrong message type!"));
 	ReadPayload(ByteArray, PayloadData.bSuccess, Offset);
 	ReadPayload(ByteArray, PayloadData.RoomId, Offset);
 	ReadPayload(ByteArray, PayloadData.UserId, Offset);

@@ -23,18 +23,17 @@ const FUploadFileResponsePayload& UUploadFileResponse::ParseUploadFileResponsePa
 
 void UUploadFileResponse::InitializeByPayload(const FUploadFileResponsePayload& FileInfo)
 {
-	MessType = (uint8) EClientServerMessageType::UploadFileResponse;
 	PayloadData = FileInfo;
 
 	const int32 Length =
-		CalculatePayloadSize(MessType) +
+		CalculatePayloadSize(GetMessageType()) +
 		CalculatePayloadSize(FileInfo.bSuccess) +
 		CalculatePayloadSize(FileInfo.FileId);
 
 	DataByteArray.SetNum(Length, false);
 
 	int32 Offset = 0;
-	WritePayload(MessType, DataByteArray, Offset);
+	WritePayload(GetMessageType(), DataByteArray, Offset);
 	WritePayload(FileInfo.bSuccess, DataByteArray, Offset);
 	WritePayload(FileInfo.FileId, DataByteArray, Offset);
 }
@@ -43,10 +42,10 @@ void UUploadFileResponse::InitializeByPayload(const FUploadFileResponsePayload& 
 void UUploadFileResponse::InitializeByByteArray(const TArray<uint8>& ByteArray)
 {
 	uint8 MessageType;
-
+	
 	int32 Offset = 0;
 	ReadPayload(ByteArray, MessageType, Offset);
-	checkf(MessageType==MessType, TEXT("Failed to deserialize message. Wrong message type!"));
+	checkf(MessageType==GetMessageType(), TEXT("Failed to deserialize message. Wrong message type!"));
 	ReadPayload(ByteArray, PayloadData.bSuccess, Offset);
 	ReadPayload(ByteArray, PayloadData.FileId, Offset);
 }
