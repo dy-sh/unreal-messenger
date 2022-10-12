@@ -4,27 +4,40 @@
 
 #include "CoreMinimal.h"
 #include "ClientServerMessage.h"
-#include "UObject/Object.h"
 #include "UploadFileRequest.generated.h"
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FFileDataPackageInfo
 {
-	GENERATED_BODY();
-	
+	GENERATED_BODY()
+	;
+
 	FString RoomId;
 	FString UserId;
 	FString FileName;
 	TArray<uint8> FileContent;
 };
 
-UCLASS()
-class MESSENGER_API UUploadFileRequest : public UClientServerMessage<FFileDataPackageInfo>
+UCLASS(BlueprintType)
+class MESSENGER_API UUploadFileRequest : public UClientServerMessage
 {
 	GENERATED_BODY()
 
 public:
-	virtual void FileToDataPackage(const FFileDataPackageInfo& PackageInfo, TArray<uint8>& Package) override;
-	virtual void DataPackageToFile(const TArray<uint8>& Package, FFileDataPackageInfo& PackageInfo) override;
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	virtual UUploadFileRequest* CreateUploadFileRequest(const FFileDataPackageInfo& FileInfo);
+
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	void InitializeByPayload(const int32 MessageId, const FFileDataPackageInfo& FileInfo);
+
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	void InitializeByByteArray(const TArray<uint8>& ByteArray);
+
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	virtual const FFileDataPackageInfo& GetPayload() const { return PayloadData; }
+
+
+protected:
+	FFileDataPackageInfo PayloadData;
 };

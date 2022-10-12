@@ -1,51 +1,64 @@
-﻿// Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
+﻿// // Copyright 2022 Dmitry Savosh <d.savosh@gmail.com>
 
 
 #include "UploadFileRequest.h"
-
 #include "NetworkUtils.h"
 
 
-void UUploadFileRequest::FileToDataPackage(const FFileDataPackageInfo& PackageInfo, TArray<uint8>& Package)
+UUploadFileRequest* UUploadFileRequest::CreateUploadFileRequest(const FFileDataPackageInfo& FileInfo)
 {
-	TArray<uint8> RoomIdByteArray;
-	UNetworkUtils::StringToByteArray(PackageInfo.RoomId, RoomIdByteArray);
-
-	TArray<uint8> UserIdByteArray;
-	UNetworkUtils::StringToByteArray(PackageInfo.UserId, UserIdByteArray);
-
-	TArray<uint8> FileNameByteArray;
-	UNetworkUtils::StringToByteArray(PackageInfo.FileName, FileNameByteArray);
-
-	const int32 PackageLength =
-		DATA_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
-		DATA_SIZE_BIT_DEPTH + PackageInfo.FileContent.Num();
-
-	Package.SetNum(PackageLength, false);
-
-	int32 Offset = 0;
-	WritePayloadToPackage(DATA_SIZE_BIT_DEPTH, RoomIdByteArray, Package, Offset);
-	WritePayloadToPackage(DATA_SIZE_BIT_DEPTH, UserIdByteArray, Package, Offset);
-	WritePayloadToPackage(DATA_SIZE_BIT_DEPTH, FileNameByteArray, Package, Offset);
-	WritePayloadToPackage(DATA_SIZE_BIT_DEPTH, PackageInfo.FileContent, Package, Offset);
+	auto* Obj = NewObject<UUploadFileRequest>();
+	return Obj;
 }
 
 
-void UUploadFileRequest::DataPackageToFile(const TArray<uint8>& Package, FFileDataPackageInfo& PackageInfo)
+void UUploadFileRequest::InitializeByPayload(const int32 MessageId, const FFileDataPackageInfo& FileInfo)
 {
+	MessId = MessageId;
+	PayloadData = FileInfo;
+
+	TArray<uint8> RoomIdByteArray;
+	UNetworkUtils::StringToByteArray(FileInfo.RoomId, RoomIdByteArray);
+
+	TArray<uint8> UserIdByteArray;
+	UNetworkUtils::StringToByteArray(FileInfo.UserId, UserIdByteArray);
+
+	TArray<uint8> FileNameByteArray;
+	UNetworkUtils::StringToByteArray(FileInfo.FileName, FileNameByteArray);
+
+	const int32 Length =
+		DATA_SIZE_BIT_DEPTH + //MessageId
+		DATA_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
+		DATA_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
+		DATA_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
+		DATA_SIZE_BIT_DEPTH + FileInfo.FileContent.Num();
+
+	DataByteArray.SetNum(Length, false);
+
+	int32 Offset = 0;
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessageId, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, RoomIdByteArray, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, UserIdByteArray, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileNameByteArray, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileInfo.FileContent, DataByteArray, Offset);
+}
+
+
+void UUploadFileRequest::InitializeByByteArray(const TArray<uint8>& ByteArray)
+{
+	int32 MessageId;
 	TArray<uint8> RoomIdByteArray;
 	TArray<uint8> UserIdByteArray;
 	TArray<uint8> FileNameByteArray;
 
 	int32 Offset = 0;
-	ReadPayloadFromPackage(DATA_SIZE_BIT_DEPTH, Package, RoomIdByteArray, Offset);
-	ReadPayloadFromPackage(DATA_SIZE_BIT_DEPTH, Package, UserIdByteArray, Offset);
-	ReadPayloadFromPackage(DATA_SIZE_BIT_DEPTH, Package, FileNameByteArray, Offset);
-	ReadPayloadFromPackage(DATA_SIZE_BIT_DEPTH, Package, PackageInfo.FileContent, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageId, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, RoomIdByteArray, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, UserIdByteArray, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, FileNameByteArray, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, PayloadData.FileContent, Offset);
 
-	PackageInfo.RoomId = UNetworkUtils::ByteArrayToString(RoomIdByteArray);
-	PackageInfo.UserId = UNetworkUtils::ByteArrayToString(UserIdByteArray);
-	PackageInfo.FileName = UNetworkUtils::ByteArrayToString(FileNameByteArray);
+	PayloadData.RoomId = UNetworkUtils::ByteArrayToString(RoomIdByteArray);
+	PayloadData.UserId = UNetworkUtils::ByteArrayToString(UserIdByteArray);
+	PayloadData.FileName = UNetworkUtils::ByteArrayToString(FileNameByteArray);
 }

@@ -3,23 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
-#include "FileDataPackage.generated.h"
+#include "ClientServerMessage.generated.h"
 
 constexpr int32 DATA_SIZE_BIT_DEPTH = 4;
 
-
-template<class T>  
 UCLASS()
-class UClientServerMessage: public UObject
+class UClientServerMessage : public UObject
 {
 	GENERATED_BODY()
-	
-public:
-	virtual void FileToDataPackage(const T& PackageInfo, TArray<uint8>& Package)= 0;
-	virtual void DataPackageToFile(const TArray<uint8>& Package, T& PackageInfo)= 0;
-protected:
-	void WritePayloadToPackage(const int32 DataSizeBitDepth, const TArray<uint8>& Payload, TArray<uint8>& Package, int32& Offset);
-	void ReadPayloadFromPackage(const int32 DataSizeBitDepth, const TArray<uint8>& Package, TArray<uint8>& Payload, int32& Offset);
-};
 
+public:
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	const TArray<uint8>& GetByteArray() const { return DataByteArray; }
+
+	UFUNCTION(BlueprintPure, Category = "ClientServerMessages")
+	int32 GetMessageId() const { return MessId; }
+
+protected:
+	int32 MessId{0};
+	TArray<uint8> DataByteArray;
+
+	void WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Payload, TArray<uint8>& Data,
+		int32& Offset);
+	void ReadPayloadFromDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Data, TArray<uint8>& Payload,
+		int32& Offset);
+	void WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const int32& Payload, TArray<uint8>& Data,
+		int32& Offset);
+	void ReadPayloadFromDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Data, int32& Payload,
+		int32& Offset);
+};

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FileDataPackage.h"
 #include "Components/ActorComponent.h"
 #include "Messenger/Chat/ChatTypes.h"
+#include "Messenger/Chat/Protocol/UploadFileRequest.h"
 #include "FileTransferComponent.generated.h"
 
 class UConnectionBase;

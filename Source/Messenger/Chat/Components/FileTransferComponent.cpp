@@ -145,7 +145,7 @@ void UFileTransferComponent::OnConnected(UConnectionBase* Connection)
 		// }
 
 		TArray<uint8> Package;
-		FileDataPackage::FileToDataPackage(FileToSend, Package);
+		// FileDataPackage::FileToDataPackage(FileToSend, Package);
 		ConnectionHandler->Send(Package);
 		// FileToSend = FFileDataPackageInfo{};
 		// CloseConnection();

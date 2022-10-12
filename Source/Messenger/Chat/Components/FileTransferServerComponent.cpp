@@ -6,11 +6,11 @@
 #include "ChatServerComponent.h"
 #include "ConnectionHandler.h"
 #include "ConnectionTcpServer.h"
-#include "FileDataPackage.h"
 #include "FileUtilsLibrary.h"
 #include "Messenger/Chat/ChatTypes.h"
 #include "GameFramework/GameModeBase.h"
 #include "Messenger/Authorization/AuthorizationComponent.h"
+#include "Messenger/Chat/Protocol/UploadFileRequest.h"
 #include "Messenger/Chat/Room/ChatRoom.h"
 
 
@@ -77,7 +77,7 @@ void UFileTransferServerComponent::OnReceivedData(UConnectionBase* Connection, c
 	UE_LOG(LogTemp, Warning, L"Received %i", ByteArray.Num());
 
 	FFileDataPackageInfo ReceivedFile;
-	FileDataPackage::DataPackageToFile(ByteArray, ReceivedFile);
+	// FileDataPackage::DataPackageToFile(ByteArray, ReceivedFile);
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
