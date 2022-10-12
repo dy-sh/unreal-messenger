@@ -70,6 +70,8 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 	}
 
 	ProceedingFileInfo.FilePath = FilePath;
+	ProceedingFileInfo.FileName = FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(
+		                              ProceedingFileInfo.FilePath);
 	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
 
@@ -138,12 +140,6 @@ bool UFileTransferComponent::DownloadFileFromServer(const FString& FileId)
 
 bool UFileTransferComponent::SaveDownloadedFile(const FTransferredFileInfo& FileInfo, const FString& Path)
 {
-	if (FileInfo.State != ETransferringFileState::Downloaded)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Faild to save file. File is not downloaded."));
-		return false;
-	}
-
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	if (!FileManager.FileExists(*FileInfo.FilePath))
 	{

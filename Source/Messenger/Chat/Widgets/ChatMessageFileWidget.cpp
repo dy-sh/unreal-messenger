@@ -8,7 +8,6 @@
 void UChatMessageFileWidget::DownloadFileFromServer()
 {
 	if (!GetWorld()) return;
-	if (FileInfo.State != ETransferringFileState::None && FileInfo.State != ETransferringFileState::Uploaded) return;
 
 	if (auto* PC = GetWorld()->GetFirstPlayerController())
 	{
@@ -23,7 +22,6 @@ void UChatMessageFileWidget::DownloadFileFromServer()
 void UChatMessageFileWidget::SaveDownloadedFile(FString Path)
 {
 	if (!GetWorld()) return;
-	if (FileInfo.State != ETransferringFileState::Downloaded) return;
 
 	if (auto* PC = GetWorld()->GetFirstPlayerController())
 	{
