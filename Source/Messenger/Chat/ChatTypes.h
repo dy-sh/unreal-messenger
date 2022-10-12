@@ -5,6 +5,28 @@
 #include "CoreMinimal.h"
 #include "ChatTypes.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FChatRoomSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString RoomName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool AutoAcceptUsers;
+};
+
+USTRUCT(BlueprintType)
+struct FChatSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString NickName;
+};
+
 UENUM(BlueprintType)
 enum class EClientServerMessageType:uint8
 {
@@ -63,27 +85,6 @@ struct FChatMessage
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString UserName;
-};
-
-USTRUCT(BlueprintType)
-struct FChatRoomSettings
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString RoomName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool AutoAcceptUsers;
-};
-
-USTRUCT(BlueprintType)
-struct FChatSettings
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString NickName;
 };
 
 UENUM(BlueprintType)
