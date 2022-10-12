@@ -114,7 +114,7 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(const TArray<uint8>& ByteA
 	FileInfo.UserName = "User";
 	FileInfo.FileId = FGuid::NewGuid().ToString();
 	FileInfo.FileName = ReceivedFile.FileName;
-	FileInfo.SavedFileName = FilePath;
+	FileInfo.FilePath = FilePath;
 	FileInfo.Date = FDateTime::Now();
 
 	SendFileInfoToAllUsersInRoom(FileInfo, false);
@@ -133,17 +133,17 @@ void UFileTransferSubsystem::ReceiveDownloadFileRequest(UConnectionBase* Connect
 
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
-	if (!FileManager.FileExists(*FileInfo.SavedFileName))
+	if (!FileManager.FileExists(*FileInfo.FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FileInfo.SavedFileName);
+		UE_LOG(LogTemp, Error, TEXT("File not found: %s"), *FileInfo.FilePath);
 		return; // todo: send bad request
 	}
 
 	FDownloadFileResponsePayload FileToSend;
 
-	if (!FFileHelper::LoadFileToArray(FileToSend.FileContent, *FileInfo.SavedFileName))
+	if (!FFileHelper::LoadFileToArray(FileToSend.FileContent, *FileInfo.FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load file %s"), *FileInfo.SavedFileName);
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file %s"), *FileInfo.FilePath);
 		return; // todo: send bad request
 	}
 

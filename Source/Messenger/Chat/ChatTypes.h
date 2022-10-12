@@ -10,6 +10,7 @@ enum class EClientServerMessageType:int8
 {
 	Unknown,
 	UploadFileRequest,
+	UploadFileResponse,
 	DownloadFileRequest,
 	DownloadFileResponse,
 };
@@ -85,6 +86,17 @@ struct FChatSettings
 	FString NickName;
 };
 
+UENUM()
+enum class ETransferringFileState
+{
+	None,
+	RequestingUpload,
+	Uploading,
+	Uploaded,
+	Downloading,
+	Downloaded
+};
+
 
 USTRUCT(BlueprintType)
 struct FTransferredFileInfo
@@ -107,8 +119,11 @@ struct FTransferredFileInfo
 	FString FileName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString SavedFileName;
+	FString FilePath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FDateTime Date;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETransferringFileState State;
 };

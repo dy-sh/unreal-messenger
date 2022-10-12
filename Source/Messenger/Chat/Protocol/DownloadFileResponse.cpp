@@ -24,7 +24,7 @@ const FDownloadFileResponsePayload& UDownloadFileResponse::ParseDownloadFileResp
 
 void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePayload& FileInfo)
 {
-	MessType = (int32)EClientServerMessageType::DownloadFileResponse;
+	MessType = (int32) EClientServerMessageType::DownloadFileResponse;
 	PayloadData = FileInfo;
 
 	TArray<uint8> RoomIdByteArray;
@@ -41,6 +41,7 @@ void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePaylo
 
 	const int32 Length =
 		DATA_SIZE_BIT_DEPTH + //MessageType
+		1 +                   //bSuccess
 		DATA_SIZE_BIT_DEPTH + RoomIdByteArray.Num() +
 		DATA_SIZE_BIT_DEPTH + UserIdByteArray.Num() +
 		DATA_SIZE_BIT_DEPTH + FileNameByteArray.Num() +
@@ -51,6 +52,7 @@ void UDownloadFileResponse::InitializeByPayload(const FDownloadFileResponsePaylo
 
 	int32 Offset = 0;
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, MessType, DataByteArray, Offset);
+	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileInfo.bSuccess, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, RoomIdByteArray, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, UserIdByteArray, DataByteArray, Offset);
 	WritePayloadToDataByteArray(DATA_SIZE_BIT_DEPTH, FileNameByteArray, DataByteArray, Offset);
@@ -69,6 +71,7 @@ void UDownloadFileResponse::InitializeByByteArray(const TArray<uint8>& ByteArray
 
 	int32 Offset = 0;
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, MessageType, Offset);
+	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, PayloadData.bSuccess, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, RoomIdByteArray, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, UserIdByteArray, Offset);
 	ReadPayloadFromDataByteArray(DATA_SIZE_BIT_DEPTH, ByteArray, FileNameByteArray, Offset);

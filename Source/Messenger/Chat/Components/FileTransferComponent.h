@@ -16,16 +16,15 @@ class UOnlineSessionsSubsystem;
 class UChatComponent;
 
 
-UENUM(BlueprintType)
-enum class EFileTransferringState:uint8
-{
-	None,
-	SendingFile,
-	DownloadingFile,
-};
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartUploadingFile, const FTransferredFileInfo&, FileInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUploadingFileStarted, const FTransferredFileInfo&, FileInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUploadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSucces);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDownloadingFileStarted, const FTransferredFileInfo&, FileInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDownloadingFileComplete, const FTransferredFileInfo&, FileInfo, bool, bSucces);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -40,7 +39,10 @@ public:
 
 	UFileTransferComponent();
 
-	FOnStartUploadingFile OnStartUploadingFile;
+	FOnUploadingFileStarted OnUploadingFileStarted;
+	FOnUploadingFileComplete OnUploadingFileComplete;
+	FOnDownloadingFileStarted OnDownloadingFileStarted;
+	FOnDownloadingFileComplete OnDownloadingFileComplete;
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestUploadingFile();
@@ -49,13 +51,13 @@ public:
 	void ClientResponseUploadingFile(const FString& FileId);
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
-	void SendFileToServer(const FString& RoomId, const FString& FilePath);
+	bool SendFileToServer(const FString& RoomId, const FString& FilePath);
 
 	UFUNCTION(BlueprintCallable, Category="FileTransferComponent")
 	bool DownloadFileFromServer(const FTransferredFileInfo& FileInfo);
 
 	UFUNCTION(BlueprintPure, Category="FileTransferComponent")
-	EFileTransferringState GetState() const { return State; }
+	ETransferringFileState GetState() const { return ProceedingFileInfo.State; }
 
 
 protected:
@@ -70,21 +72,13 @@ protected:
 	UPROPERTY()
 	UChatComponent* ChatComponent;
 
-	FUploadFileRequestPayload FileToSend;
-	FTransferredFileInfo FileToDownload;
-
-	EFileTransferringState State;
-
-	FString UploadingFileId;
-	FString UploadingFilePath;
-	FString UploadingFileRoomId;
+	FTransferredFileInfo ProceedingFileInfo;
+	TArray<uint8> ProceedingFileContent;
 
 
 	virtual void BeginPlay() override;
 
-	bool SendFileToServer(const FString& RoomId, const FString& FileId, const FString& FilePath);
-
-	bool ConnectToServer(const FString& IpAddress, const int32 Port);
+	void ConnectToServer(const FString& IpAddress, const int32 Port);
 	void CloseConnection();
 
 	UFUNCTION()

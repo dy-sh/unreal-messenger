@@ -14,6 +14,9 @@ struct FDownloadFileResponsePayload
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bSuccess;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString RoomId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

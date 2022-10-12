@@ -36,7 +36,7 @@ void UClientServerMessage::ReadPayloadFromDataByteArray(const int32 DataSizeBitD
 
 
 
-void UClientServerMessage::WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const int32& Payload,
+void UClientServerMessage::WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const int32 Payload,
 	TArray<uint8>& Data, int32& Offset)
 {
 	for (int i = 0; i < DataSizeBitDepth; ++i)
@@ -56,5 +56,20 @@ void UClientServerMessage::ReadPayloadFromDataByteArray(const int32 DataSizeBitD
 	{
 		Payload |= Data[i + Offset] << i * 8;
 	}
+	Offset += DataSizeBitDepth;
+}
+
+void UClientServerMessage::WritePayloadToDataByteArray(const int32 DataSizeBitDepth, const bool Payload,
+	TArray<uint8>& Data, int32& Offset)
+{
+	Data[Offset] = Payload;
+	Offset += DataSizeBitDepth;
+}
+
+
+void UClientServerMessage::ReadPayloadFromDataByteArray(const int32 DataSizeBitDepth, const TArray<uint8>& Data,
+	bool& Payload, int32& Offset)
+{
+	Payload = Data[Offset];
 	Offset += DataSizeBitDepth;
 }
