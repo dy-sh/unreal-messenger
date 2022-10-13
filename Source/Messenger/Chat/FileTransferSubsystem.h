@@ -44,7 +44,7 @@ public:
 	UFUNCTION(BlueprintPure, Category="FileTransferSubsystem")
 	bool IsServerStarted() const { return ConnectionHandler != nullptr; }
 
-	bool SaveReceivedFile(FUploadFileRequestPayload Request);
+	bool SaveReceivedFile(FUploadFileRequestPayload Request, FString& FilePath);
 protected:
 	int32 ServerPort = 3000;
 

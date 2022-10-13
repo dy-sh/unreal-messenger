@@ -90,12 +90,12 @@ EClientServerMessageType UFileTransferSubsystem::ParseMessageType(const TArray<u
 }
 
 
-bool UFileTransferSubsystem::SaveReceivedFile(FUploadFileRequestPayload Request)
+bool UFileTransferSubsystem::SaveReceivedFile(FUploadFileRequestPayload Request, FString& FilePath)
 {
 	// save file
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 	const FString SavedPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir());
-	FString FilePath = SavedPath + Request.FileName; // todo: escape filename to prevent cheating
+	FilePath = SavedPath + Request.FileName; // todo: escape filename to prevent cheating
 	FilePath = GetNotExistFileName(FilePath);
 
 	if (!FFileHelper::SaveArrayToFile(Request.FileContent, *FilePath))
@@ -161,7 +161,8 @@ void UFileTransferSubsystem::ReceiveUploadFileRequest(UConnectionBase* Connectio
 
 	if (bIsServerWaitingThisFile)
 	{
-		Response.bSuccess = SaveReceivedFile(Request);
+		FString SavedPath;
+		Response.bSuccess = SaveReceivedFile(Request,SavedPath);
 	}
 	else
 	{

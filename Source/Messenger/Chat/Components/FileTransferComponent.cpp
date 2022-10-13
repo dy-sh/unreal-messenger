@@ -74,10 +74,30 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 	ProceedingFileInfo.FileName = FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(
 		                              ProceedingFileInfo.FilePath);
 	ProceedingFileRoomId = ChatComponent->GetRoomComponent()->GetActiveRoomId();
+
+
+	if (GetOwner()->HasAuthority())
+	{
+		FUploadFileRequestPayload Request;
+
+		Request.FileId = FGuid::NewGuid().ToString();
+		Request.FileName = ProceedingFileInfo.FileName;
+		Request.RoomId = ProceedingFileRoomId;
+		Request.UserId = ChatComponent->GetUserInfo().UserID;
+		Request.UserName = ChatComponent->GetUserInfo().UserName;
+		Request.FileContent = ProceedingFileContent;
+		const bool bSuccess = FileTransferSubsystem->SaveReceivedFile(Request,ProceedingFileInfo.FilePath);
+
+		ProceedingFileInfo.FileId = Request.FileId;
+		ProceedingFileInfo.FileName =  FPaths::GetBaseFilename(ProceedingFileInfo.FilePath) + "." + FPaths::GetExtension(
+							   ProceedingFileInfo.FilePath);
+		ProceedingFileInfo.State = ETransferringFileState::Uploaded;
+		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, bSuccess);
+		return bSuccess;
+	}
+	
 	ProceedingFileInfo.State = ETransferringFileState::RequestingUpload;
-
 	ServerRequestUploadingFile();
-
 	return true;
 }
 
@@ -85,26 +105,9 @@ bool UFileTransferComponent::SendFileToServer(const FString& FilePath)
 void UFileTransferComponent::ServerRequestUploadingFile_Implementation()
 {
 	ProceedingFileInfo.FileId = FGuid::NewGuid().ToString();
-
-	if (GetOwner()->HasAuthority())
-	{
-		FUploadFileRequestPayload Request;
-		Request.FileId = ProceedingFileInfo.FileId;
-		Request.FileName = ProceedingFileInfo.FileName;
-		Request.RoomId = ProceedingFileRoomId;
-		Request.UserId = ChatComponent->GetUserInfo().UserID;
-		Request.UserName = ChatComponent->GetUserInfo().UserName;
-		Request.FileContent = ProceedingFileContent;
-		const bool bSuccess = FileTransferSubsystem->SaveReceivedFile(Request);
-
-		ProceedingFileInfo.State = ETransferringFileState::Uploaded;
-		OnUploadingFileComplete.Broadcast(ProceedingFileInfo, bSuccess);
-	}
-	else
-	{
 		ProceedingFileInfo.State = ETransferringFileState::Uploading;
+	
 		ClientResponseUploadingFile(ProceedingFileInfo.FileId);
-	}
 }
 
 
@@ -144,34 +147,44 @@ bool UFileTransferComponent::DownloadFileFromServer(const FString& FileId)
 
 	if (GetOwner()->HasAuthority())
 	{
-		const auto* ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>();
-		if (!ChatSubsystem) return false;
-
-		auto* Room = ChatSubsystem->GetRoom(ProceedingFileRoomId);
-		if (!Room) return false;
-
-		FTransferredFileInfo FileInfo;
-		if (!Room->GetFileInfo(FileId, FileInfo)) return false;
-
-		ProceedingFileInfo.FilePath = FileInfo.FilePath;
-		ProceedingFileInfo.FileName = FileInfo.FileName;
-		ProceedingFileInfo.State = ETransferringFileState::Downloaded;
-		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, true);
-	}
-	else
-	{
-		const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
-		if (ServerIpAddress.IsEmpty())
+		bool bSuccess = false;
+		if (const auto* ChatSubsystem = GetWorld()->GetSubsystem<UChatSubsystem>())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
-			return false;
+			if (auto* Room = ChatSubsystem->GetRoom(ProceedingFileRoomId))
+			{
+				FTransferredFileInfo FileInfo;
+				if (Room->GetFileInfo(FileId, FileInfo))
+				{
+					IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+					if (FileManager.FileExists(*FileInfo.FilePath))
+					{
+						ProceedingFileInfo.FilePath = FileInfo.FilePath;
+						ProceedingFileInfo.FileName = FileInfo.FileName;
+						bSuccess = true;
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("Faild to download local file. Does not exist."));
+					}
+				}
+			}
 		}
-
-		ProceedingFileInfo.State = ETransferringFileState::Downloading;
-		ConnectToServer(ServerIpAddress, ServerPort);
-
-		return true;
+		ProceedingFileInfo.State = ETransferringFileState::Downloaded;
+		OnDownloadingFileComplete.Broadcast(ProceedingFileInfo, bSuccess);
+		return bSuccess;
 	}
+
+	const FString ServerIpAddress = OnlineSessionsSubsystem->GetServerIp();
+	if (ServerIpAddress.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get server IP address"));
+		return false;
+	}
+
+	ProceedingFileInfo.State = ETransferringFileState::Downloading;
+	ConnectToServer(ServerIpAddress, ServerPort);
+
+	return true;
 }
 
 
